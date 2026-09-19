@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ISL Studio</title>
+<meta name="description" content="이온흡착형 중희토류 광상의 사면 중력식 침출과 피압대수층 정호 패턴식 침출을 비교하는 웹 프로토타입.">
+<style>
+:root{
+  --bg:#15171B; --panel:#1D2026; --panel2:#23272E; --line:#31363F;
+  --ink:#E9E5DC; --ink2:#A7AAB2; --ink3:#70747C;
+  --ore:#B5652E; --water:#3FA7D6; --inj:#4FC3E8; --prod:#E0A64A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;
+  line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:860px;margin:0 auto;padding:64px 16px 80px}
+header{border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:36px}
+h1{font-size:40px;margin:0 0 6px;letter-spacing:-0.5px}
+.sub{color:var(--ink2);font-size:17px;margin:0 0 4px}
+.tag{color:var(--ink3);font-size:13.5px;margin:10px 0 0}
+h2{font-size:19px;margin:44px 0 14px;font-weight:600}
+p{margin:0 0 14px;font-size:15px;color:var(--ink2)}
+p strong{color:var(--ink);font-weight:600}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:26px 0 8px}
+@media(max-width:640px){.cards{grid-template-columns:1fr}.wrap{padding:40px 16px 60px}h1{font-size:32px}}
+a.card{display:block;background:var(--panel);border:1px solid var(--line);border-radius:6px;
+  padding:18px 20px;text-decoration:none;color:inherit;transition:border-color .15s,background .15s}
+a.card:hover{border-color:var(--water);background:var(--panel2)}
+a.card .t{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:4px}
+a.card .d{font-size:13.5px;color:var(--ink3);line-height:1.5}
+a.card.primary{border-color:#2f5f78}
+ul{margin:0 0 14px;padding-left:20px;color:var(--ink2);font-size:15px}
+li{margin-bottom:6px}
+code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:13px;
+  background:var(--panel2);padding:1.5px 5px;border-radius:3px;color:var(--ink)}
+.note{border-left:3px solid var(--ore);padding:10px 0 10px 14px;margin:22px 0;
+  color:var(--ink2);font-size:14px;background:rgba(181,101,46,.06)}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:14px 0 8px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);color:var(--ink2)}
+th{color:var(--ink3);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.4px}
+td:first-child{color:var(--ink);white-space:nowrap}
+footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--line);
+  color:var(--ink3);font-size:13px}
+footer a{color:var(--ink2)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin:18px 0 0;font-size:13px;color:var(--ink3)}
+.legend span{display:flex;align-items:center;gap:6px}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>ISL Studio</h1>
+  <p class="sub">현장용액채광(In-Situ Leaching) 비교 시뮬레이터 · 프로토타입 v1.0</p>
+  <p class="tag">이온흡착형 중희토류 광상의 사면 중력식 침출과, 피압대수층의 정호 패턴식 침출을
+    같은 화면에서 비교합니다. 브라우저에서 단일 HTML로 실행되며 OpenGeoSys 참조해를 겹쳐 볼 수 있습니다.</p>
+</header>
+
+<div class="cards">
+  <a class="card primary" href="isl-studio-offline.html">
+    <div class="t">시뮬레이터 실행 →</div>
+    <div class="d">three.js 내장판. 바로 실행됩니다.</div>
+  </a>
+  <a class="card" href="isl-studio.html">
+    <div class="t">경량판 실행 →</div>
+    <div class="d">three.js를 CDN에서 불러옵니다.</div>
+  </a>
+</div>
+
+<div class="legend">
+  <span><i class="dot" style="background:var(--inj)"></i>주입정</span>
+  <span><i class="dot" style="background:var(--prod)"></i>회수정</span>
+  <span><i class="dot" style="background:var(--water)"></i>침출액</span>
+  <span><i class="dot" style="background:var(--ore)"></i>광석층</span>
+</div>
+
+<div class="note">
+  예시용 프로토타입입니다. 거친 근사 모델이며 설계·인허가·환경영향평가의 근거로 사용할 수 없습니다.
+  기본값은 공개 문헌 인용치이고 특정 광산의 실측값이 아닙니다.
+</div>
+
+<h2>무엇을 보여주는가</h2>
+<p>두 방식의 환경 영향 차이는 시약이 아니라 <strong>수리지질</strong>에서 옵니다.
+사면식은 구조적으로 봉쇄가 불가능하고, 패턴식은 봉쇄가 가능하지만 지질 조건과 상시 양수·감시 비용을 요구합니다.</p>
+<ul>
+  <li><strong>사면 중력식</strong> — 불포화 사면에 황산암모늄 용액을 주입하고 하단 집액구에서 중력으로 회수.
+      기반암 차수층의 연속성이 유실을 결정합니다.</li>
+  <li><strong>정호 패턴식</strong> — 포화 피압대수층에 주입정·회수정을 격자로 배치하고,
+      양수를 주입보다 몇 % 많게(bleed) 유지해 수리학적으로 가둡니다.</li>
+</ul>
+
+<h2>문서</h2>
+<div class="cards">
+  <a class="card" href="docs/ISL-Studio-Manual.docx">
+    <div class="t">사용 설명서 (DOCX, 14쪽)</div>
+    <div class="d">실행·화면 구성·탭별 조작·지표 읽는 법</div>
+  </a>
+  <a class="card" href="docs/ISL-Studio-Technical-Background.docx">
+    <div class="t">기술 배경서 (DOCX, 23쪽)</div>
+    <div class="d">지배방정식·수치기법·OpenGeoSys 구성·검증 해석</div>
+  </a>
+</div>
+<p style="margin-top:14px"><a class="md" href="docs/COMPARE.md" style="color:var(--water)">COMPARE.md</a> —
+브라우저 근사 vs OGS 참조해 비교 결과와 결함 기록.
+<a class="md" href="ogs1/README.md" style="color:var(--water)">ogs1/README.md</a> — 재현 절차.</p>
+
+<h2>검증 요약</h2>
+<p>브라우저 근사와 OpenGeoSys 6.5.9 ComponentTransport 참조해, 기준 시나리오 + 12개 라이브러리 비교:</p>
+<table>
+  <tr><th>지표</th><th>브라우저 − OGS</th></tr>
+  <tr><td>수두 RMS 차</td><td>0.13 m (수두 범위의 약 1 %)</td></tr>
+  <tr><td>sweep 접촉율</td><td>12개 평균 −0.6 %p (물리 분산 반영 후)</td></tr>
+  <tr><td>광체 밖 추적자</td><td>봉쇄 성립 ±1 %p / 봉쇄 실패 시 브라우저 3~5 %p 과대</td></tr>
+  <tr><td>회수정 파과 시각</td><td>−2 ~ +5 일</td></tr>
+</table>
+
+<footer>
+  소스와 재현 절차는 저장소를 보십시오. 3D 렌더링에 <a href="https://threejs.org">three.js</a>(MIT)를,
+  참조해에 <a href="https://www.opengeosys.org">OpenGeoSys</a>(BSD-3)를 사용했습니다.
+</footer>
+
+</div>
+
+<script>
+/* ↓ 이 한 줄만 본인 저장소 주소로 바꾸면 .md 링크가 GitHub 렌더링 화면으로 연결됩니다.
+   비워 두면 파일을 그대로 내려받습니다. 예: "https://github.com/junhpark/isl-studio" */
+const REPO = "";
+if (REPO) document.querySelectorAll('a.md').forEach(a => {
+  a.href = REPO.replace(/\/$/, '') + '/blob/main/' + a.getAttribute('href');
+});
+</script>
+</body>
+</html>

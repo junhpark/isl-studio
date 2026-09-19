@@ -18,6 +18,7 @@
 ## 구성
 
 ```
+index.html                 안내 페이지 (GitHub Pages 진입점)
 isl-studio.html            웹 프로그램 (사면 / 패턴 / 비교 탭)
 isl-studio-offline.html    three.js 내장판
 docs/
@@ -33,6 +34,7 @@ ogs1/                      OpenGeoSys Phase 1 키트
   runner/templates/        pattern_hc.prj.tmpl (이류형 + 등방확산 안정화)
   browser/                 헤드리스 브라우저 스냅샷 생성 (Node)
   cases/                   base + 12 시나리오 라이브러리 (results.json / pattern.prj 만 포함)
+PUBLISHING.md              GitHub 게시·Pages 배포 절차
 manual/                    설명서·기술배경서 생성 스크립트 (docx-js), 수식(eqs.py)·개념도(schematics.py) 생성, 스크린샷(Playwright)
 ```
 
@@ -65,6 +67,11 @@ python ogs1/runner/compare.py ogs1/cases/base ogs1/cases/browser_disp/browser_sn
 
 Yuan et al. (2025), Stantec Hard Rock Miner's Handbook, SME Mining Reference Handbook, IAEA ISL 보고서 등 — 설명서 11장.
 
+## 게시
+
+GitHub 저장소 생성·푸시·Pages 배포 절차는 [PUBLISHING.md](PUBLISHING.md) 참고.
+Pages 를 켜면 `index.html` 이 진입점이 되고 `https://<아이디>.github.io/<저장소>/` 로 시뮬레이터가 바로 열린다.
+
 ## 라이선스
 
-미정. 공개 전에 라이선스 파일을 추가할 것.
+미정. 공개 전에 라이선스 파일을 추가할 것. 제3자 구성요소: three.js (MIT, `isl-studio-offline.html` 에 내장), OpenGeoSys (BSD-3, 의존성).
