@@ -71,7 +71,7 @@ body.push(B('정책·의사결정자: 배리어 유무, bleed 유무에 따라 �
 body.push(B('기술 검토자: 근사 모델의 가정과 한계, OpenGeoSys 참조해 대비 오차 범위를 확인'));
 body.push(B('개발자: 물리 모듈·렌더러·OGS 연동 파이프라인의 구조를 파악해 확장'));
 body.push(H2('1.3 이 문서가 다루지 않는 것'));
-body.push(P('물리 모델의 유도, 코드 구조, OGS 파이프라인의 상세는 함께 배포되는 README.md와 COMPARE.md에 있습니다. 이 문서는 화면을 열어 조작하고 결과를 읽는 방법에 집중합니다.'));
+body.push(P('물리 모델의 지배방정식·수치기법·OpenGeoSys 구성의 상세는 함께 배포되는 「기술 배경서」(ISL-Studio-Technical-Background.docx)에, 비교 실험의 원자료와 결함 기록은 README.md와 COMPARE.md에 있습니다. 이 문서는 화면을 열어 조작하고 결과를 읽는 방법에 집중합니다.'));
 
 /* ── 2 시작하기 ── */
 body.push(H1('2. 시작하기'));

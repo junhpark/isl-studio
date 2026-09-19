@@ -21,9 +21,10 @@
 isl-studio.html            웹 프로그램 (사면 / 패턴 / 비교 탭)
 isl-studio-offline.html    three.js 내장판
 docs/
-  ISL-Studio-Manual.docx   사용 설명서 (14쪽)
+  ISL-Studio-Manual.docx   사용 설명서 (14쪽) — 조작·지표 읽기
+  ISL-Studio-Technical-Background.docx  기술 배경서 (23쪽) — 지배방정식·수치기법·OGS 구성·검증 해석
   COMPARE.md               브라우저 근사 vs OGS 참조해 비교 결과 (Phase 1 결론)
-  figs/                    비교 그림 3장
+  figs/                    비교 그림 3장 + 개념도 3장
   screenshots/             화면 캡처
 ogs1/                      OpenGeoSys Phase 1 키트
   README.md                5일 계획·결함 기록·재현 방법
@@ -32,7 +33,7 @@ ogs1/                      OpenGeoSys Phase 1 키트
   runner/templates/        pattern_hc.prj.tmpl (이류형 + 등방확산 안정화)
   browser/                 헤드리스 브라우저 스냅샷 생성 (Node)
   cases/                   base + 12 시나리오 라이브러리 (results.json / pattern.prj 만 포함)
-manual/                    설명서 생성 스크립트 (docx-js) · 스크린샷 스크립트 (Playwright)
+manual/                    설명서·기술배경서 생성 스크립트 (docx-js), 수식(eqs.py)·개념도(schematics.py) 생성, 스크린샷(Playwright)
 ```
 
 `ogs1/cases/**/fields.bin`, `*.vtu`, 로그는 용량 때문에 저장소에서 제외했다(`.gitignore`).
@@ -58,7 +59,7 @@ python ogs1/runner/run_case.py ogs1/cases/base
 python ogs1/runner/compare.py ogs1/cases/base ogs1/cases/browser_disp/browser_snapshot_day270.json
 ```
 
-설명서 재생성: `cd manual && node build.js` (docx 패키지 필요). 화면 캡처: `python manual/shot.py` (Playwright + Chromium).
+설명서 재생성: `node manual/build.js`; 기술 배경서: `python3 manual/eqs.py && python3 manual/schematics.py && node manual/build_tech.js` (docx npm 패키지, matplotlib 필요). 화면 캡처: `python manual/shot.py` (Playwright + Chromium).
 
 ## 참고문헌
 
