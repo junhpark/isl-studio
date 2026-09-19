@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>현장용액채광(ISL) 비교 시뮬레이터 — 프로토타입</title>
+<style>
+:root{
+  --bg:#15171B; --panel:#1D2026; --panel2:#23272E; --line:#31363F;
+  --ink:#E9E5DC; --ink2:#A7AAB2; --ink3:#70747C;
+  --ore:#B5652E; --water:#3FA7D6; --liquor:#E0B33C; --alert:#E2574C; --safe:#6FCF97; --inj:#4FC3E8; --prod:#E0A64A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;
+  font-size:13px;line-height:1.6}
+.num{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+[hidden]{display:none !important}
+
+#app{display:flex;flex-direction:column;height:100%}
+#banner{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:8px 18px;background:#2A1D1B;border-bottom:1px solid #4A302B}
+#banner b{color:#E8A598;font-weight:600;font-size:12.5px}
+#banner span{color:#9C8480;font-size:12px}
+
+#tabs{display:flex;gap:2px;padding:0 18px;background:var(--panel);border-bottom:1px solid var(--line)}
+#tabs button{border:none;background:transparent;color:var(--ink3);padding:11px 18px;font-size:13px;cursor:pointer;
+  font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px}
+#tabs button.on{color:var(--ink);border-bottom-color:var(--ore)}
+#tabs button:hover{color:var(--ink2)}
+#tabs .tag{font-size:10.5px;color:var(--ink3);margin-left:6px;padding:1px 6px;border:1px solid var(--line);border-radius:9px}
+
+#main{flex:1;display:flex;min-height:0;position:relative}
+#left{background:var(--panel);width:268px;flex:0 0 268px;overflow-y:auto;border-right:1px solid var(--line)}
+#right{background:var(--panel);width:300px;flex:0 0 300px;overflow-y:auto;border-left:1px solid var(--line)}
+#stage{flex:1;position:relative;min-width:0;background:#0E1014}
+#stage canvas{display:block;position:absolute;top:0;left:0;z-index:1}
+#modes,#rightstack,#legend{z-index:5}
+
+.sec{padding:14px 16px;border-bottom:1px solid var(--line)}
+.sec h3{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.sec p.hint{font-size:11.5px;color:var(--ink3);margin-bottom:10px;line-height:1.5}
+.field{margin-bottom:13px}
+.field label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}
+.field .nm{font-size:12px;color:var(--ink2)}
+.field .vl{font-size:12.5px;color:var(--ink)}
+.src{font-size:10px;color:var(--ink3);cursor:help;border-bottom:1px dotted var(--ink3)}
+input[type=range]{width:100%;accent-color:var(--ore);height:16px}
+.seg{display:flex;gap:1px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:12px}
+.seg button{flex:1;border:none;background:var(--panel2);color:var(--ink3);padding:7px 4px;font-size:11.5px;cursor:pointer;font-family:inherit}
+.seg button.on{background:var(--ore);color:#1A1207}
+.tog{display:flex;align-items:flex-start;gap:9px;padding:7px 0;cursor:pointer}
+.tog input{margin-top:3px;accent-color:var(--ore);flex:0 0 auto}
+.tog .t1{font-size:12px;color:var(--ink)}
+.tog .t2{font-size:11px;color:var(--ink3);line-height:1.45}
+.tog.danger .t1{color:#E8A598}
+.hyp{display:inline-block;font-size:10px;color:#C9A0E8;border:1px solid #5E4A78;border-radius:9px;padding:0 6px;margin-left:5px;vertical-align:middle}
+
+.kpi{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px dotted #2A2E36}
+.kpi:last-child{border-bottom:none}
+.kpi .k{font-size:12px;color:var(--ink2)}
+.kpi .v{font-size:14px}
+.kpi .u{font-size:11px;color:var(--ink3);margin-left:3px}
+.big3{display:flex;gap:9px}
+.big3 .b{flex:1;text-align:center;padding:10px 3px;background:var(--panel2);border:1px solid var(--line);border-radius:3px}
+.big3 .b .lab{font-size:11px;color:var(--ink3);margin-bottom:4px}
+.big3 .b .val{font-size:23px;line-height:1.1;color:var(--ink)}
+.big3 .b .un{font-size:10.5px;color:var(--ink3);margin-top:2px}
+#warn{margin-top:9px;padding:8px 10px;border-radius:3px;font-size:11.5px;background:#2A1D1B;border:1px solid #4A302B;color:#E8A598;display:none}
+#warn.on{display:block}
+
+#modes{position:absolute;left:16px;top:16px;display:flex;gap:1px;background:var(--line);border-radius:3px;overflow:hidden}
+#modes button{border:none;background:var(--panel2);color:var(--ink3);padding:7px 13px;font-size:11.5px;cursor:pointer;font-family:inherit}
+#modes button.on{background:var(--ore);color:#1A1207}
+#rightstack{position:absolute;right:16px;top:16px;width:292px;display:flex;flex-direction:column;gap:10px;max-height:calc(100% - 32px)}
+#status{text-align:right;flex:0 0 auto;background:rgba(14,16,20,.88);border:1px solid var(--line);border-radius:3px;padding:11px 13px}
+#status .d{font-size:32px;line-height:1;color:var(--ink)}
+#status .d i{font-size:13px;color:var(--ink3);font-style:normal;margin-left:3px}
+#status .ph{font-size:12.5px;color:var(--liquor);margin-top:5px}
+#status .cap{font-size:11.5px;color:var(--ink3);line-height:1.5;margin-top:6px;border-top:1px solid var(--line);padding-top:6px}
+#legend{position:absolute;right:16px;bottom:16px;width:312px;max-height:58%;overflow-y:auto;
+  background:rgba(14,16,20,.9);border:1px solid var(--line);border-radius:3px;padding:10px 13px 11px}
+#legend .grp{display:grid;grid-template-columns:22px 1fr;column-gap:8px;row-gap:3px;align-items:center}
+#legend .grp i{margin:0}
+#legend .nm{font-size:11.5px;color:var(--ink)}
+#legend .nm .role{display:block;margin-left:0;font-size:10.5px;color:var(--ink3);line-height:1.35}
+#legend .hd{font-size:11px;color:var(--ink2);font-weight:600;margin:10px 0 5px}
+#legend .hd:first-child{margin-top:0}
+#legend .row{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink2);padding:1px 0}
+#legend i{width:18px;height:9px;border-radius:1px;display:inline-block;flex:0 0 auto}
+#legend i.ln{height:3px}
+#legend i.dsh{height:0;border-top:2px dashed #6E7C8C;background:none !important}
+#legend i.dot{width:11px;height:11px;border-radius:50%}
+#legend i.tri{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-radius:0;background:none !important}
+#legend .role{font-size:10.5px;color:var(--ink3);margin-left:5px}
+#legend .bar2{height:8px;border-radius:2px;border:1px solid #2C3039}
+#legend .barlbl{display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink3);margin-top:3px}
+
+canvas.mini{width:100%;display:block;background:#171A1F;border:1px solid var(--line);border-radius:3px}
+details.notes summary{font-size:12px;color:var(--ink2);cursor:pointer;list-style:none;padding:2px 0}
+details.notes summary::-webkit-details-marker{display:none}
+details.notes summary::before{content:"+ ";color:var(--ink3)}
+details.notes[open] summary::before{content:"− "}
+details.notes ul{margin:8px 0 0 0;padding:0;list-style:none}
+details.notes li{font-size:11.5px;color:var(--ink3);padding:4px 0 4px 11px;border-left:1px solid var(--line);margin-bottom:2px;line-height:1.5}
+details.notes li b{color:var(--ink2);font-weight:500}
+
+#timeline{flex:0 0 auto;background:var(--panel);border-top:1px solid var(--line);padding:11px 18px;display:flex;align-items:center;gap:16px}
+#timeline button{border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:6px 15px;font-size:12px;border-radius:3px;cursor:pointer;font-family:inherit}
+#timeline button:hover{border-color:var(--ore)}
+#track{flex:1;height:26px;position:relative}
+#track .bar{position:absolute;top:11px;left:0;right:0;height:4px;background:#2C3039;border-radius:2px}
+#track .ph1{position:absolute;top:11px;height:4px;background:#3A4450;border-radius:2px}
+#track .fill{position:absolute;top:11px;left:0;height:4px;background:var(--ore);border-radius:2px}
+#track .tick{position:absolute;top:0;font-size:10px;color:var(--ink3);transform:translateX(-50%)}
+#track .tick b{display:block;width:1px;height:7px;background:#3A4450;margin:16px auto 0}
+#timeline .sp{display:flex;gap:1px;background:var(--line);border-radius:3px;overflow:hidden}
+#timeline .sp button{border:none;border-radius:0;padding:6px 11px;font-size:11.5px;background:var(--panel2);color:var(--ink3)}
+#timeline .sp button.on{background:var(--water);color:#08222E}
+#timeline .cl{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink3)}
+#timeline .cl input{width:120px;accent-color:var(--water)}
+
+#compare{position:absolute;inset:0;background:var(--bg);overflow-y:auto;padding:28px 40px}
+#compare h2{font-size:17px;font-weight:600;margin-bottom:6px}
+#compare p.lead{color:var(--ink2);max-width:760px;margin-bottom:22px;line-height:1.6}
+#compare table{width:100%;max-width:960px;border-collapse:collapse;margin-bottom:22px}
+#compare th,#compare td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px}
+#compare th{color:var(--ink3);font-weight:500;font-size:11.5px}
+#compare td.v{text-align:right;font-size:14px}
+#compare td.lbl{color:var(--ink2)}
+#compare tr.hl td{background:#1D2026}
+#compare .btn{border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:9px 18px;font-size:12.5px;border-radius:3px;cursor:pointer;font-family:inherit}
+#compare .btn:hover{border-color:var(--ore)}
+#compare .take{max-width:960px;margin-top:8px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:3px;line-height:1.6}
+#compare .take b{color:var(--liquor);font-weight:500}
+#compare .cols{display:flex;gap:18px;max-width:960px;margin-top:18px}
+#compare .cols>div{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px 16px}
+#compare .cols h4{font-size:12.5px;font-weight:600;margin-bottom:6px}
+#compare .cols p{font-size:12px;color:var(--ink2);line-height:1.55}
+::-webkit-scrollbar{width:9px}
+::-webkit-scrollbar-track{background:var(--panel)}
+::-webkit-scrollbar-thumb{background:#33373F;border-radius:5px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="banner">
+    <b>예시용 프로토타입</b>
+    <span>거친 근사 모델입니다. 설계·인허가·환경영향평가 근거로 사용할 수 없습니다. 기본값은 공개 문헌 인용치이며 특정 광산의 실측값이 아닙니다.</span>
+  </div>
+  <div id="tabs">
+    <button data-tab="slope" class="on">사면 중력식<span class="tag">이온흡착형 · 동남아/중국</span></button>
+    <button data-tab="pattern">정호 패턴식<span class="tag">피압대수층 · 우라늄/구리</span></button>
+    <button data-tab="compare">비교</button>
+  </div>
+  <div id="main">
+    <div id="left">
+      <div id="ctl-slope" class="ctl"></div>
+      <div id="ctl-pattern" class="ctl" hidden></div>
+    </div>
+    <div id="stage">
+      <div id="modes"></div>
+      <div id="rightstack">
+        <div id="status">
+          <div class="d num"><span id="dayv">0</span><i id="dayu">일차</i></div>
+          <div class="ph" id="phase">—</div>
+          <div class="cap" id="cap2">—</div>
+        </div>
+      </div>
+      <div id="legend"></div>
+    </div>
+    <div id="right">
+      <div class="sec">
+        <div class="big3">
+          <div class="b"><div class="lab" id="k1l">—</div><div class="val num" id="k1v">—</div><div class="un" id="k1u"></div></div>
+          <div class="b"><div class="lab" id="k2l">—</div><div class="val num" id="k2v">—</div><div class="un" id="k2u"></div></div>
+          <div class="b"><div class="lab" id="k3l">—</div><div class="val num" id="k3v">—</div><div class="un" id="k3u"></div></div>
+        </div>
+        <div id="warn"></div>
+      </div>
+      <div class="sec">
+        <h3>시간 이력</h3>
+        <p class="hint" id="chart-hint"></p>
+        <canvas class="mini" id="chart" width="540" height="290"></canvas>
+      </div>
+      <div class="sec"><details class="notes"><summary>상세 지표</summary><div id="details" style="margin-top:8px"></div></details></div>
+      <div class="sec"><details class="notes"><summary>이 모델이 하지 않는 것</summary><ul id="limits"></ul></details></div>
+    </div>
+    <div id="compare" hidden></div>
+  </div>
+  <div id="timeline">
+    <button id="play">재생</button>
+    <button id="reset">초기화</button>
+    <div id="track"><div class="bar"></div><div class="ph1"></div><div class="fill"></div></div>
+    <span class="num" id="tl-label" style="color:var(--ink3);font-size:11.5px"></span>
+    <div class="sp" id="speed"><button data-s="1" class="on">느리게</button><button data-s="3">보통</button><button data-s="10">빠르게</button></div>
+    <div class="cl" id="clipwrap">절개<input type="range" id="s-clip" min="15" max="100" value="45"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   공통 유틸 — DOM 빌더, 색 스케일, 차트, 카메라
+   ═══════════════════════════════════════════════════════════ */
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const rgbStr=(r,g,b,a)=>'rgba('+(r*255|0)+','+(g*255|0)+','+(b*255|0)+','+(a===undefined?1:a.toFixed(2))+')';
+
+/* 색 스케일 (모드 키 기반) */
+const RAMPS={
+  lix:  t=>[0.24+0.06*t, 0.80-0.22*t, 0.86-0.02*t],
+  liquor:t=>{ if(t<0.5){const u=t*2; return [0.80+0.10*u,0.62-0.14*u,0.24-0.06*u];}
+              const u=(t-0.5)*2; return [0.90,0.48-0.22*u,0.18+0.06*u]; },
+  sat:  t=>[0.26-0.14*t, 0.42-0.06*t, 0.70+0.22*t],
+  prog: t=>[0.52+0.26*t, 0.42-0.12*t, 0.78-0.06*t],
+  head: t=>[0.20+0.55*t, 0.30+0.40*t, 0.62-0.30*t]
+};
+function ramp(key,t){ t=clamp(t,0,1); return RAMPS[key](t); }
+function gradientCSS(key){
+  const st=[]; for(let n=0;n<=6;n++){ const r=ramp(key,n/6); st.push(rgbStr(r[0],r[1],r[2])+' '+(n/6*100).toFixed(0)+'%'); }
+  return 'linear-gradient(90deg,'+st.join(',')+')';
+}
+
+/* ── DOM 빌더 ── */
+function uiSection(parent,title,hint){
+  const d=document.createElement('div'); d.className='sec';
+  d.innerHTML='<h3>'+title+'</h3>'+(hint?'<p class="hint">'+hint+'</p>':'');
+  parent.appendChild(d); return d;
+}
+function uiSlider(parent,o){
+  const f=document.createElement('div'); f.className='field';
+  f.innerHTML='<label><span class="nm">'+o.label+'</span><span class="vl num"></span></label>'+
+    '<input type="range" min="'+o.min+'" max="'+o.max+'" step="'+(o.step||1)+'" value="'+o.val+'">'+
+    (o.src?'<div class="src" title="'+o.srcTitle.replace(/"/g,'&quot;')+'">'+o.src+'</div>':'');
+  parent.appendChild(f);
+  const inp=f.querySelector('input'), vl=f.querySelector('.vl');
+  const run=()=>{ const v=+inp.value; vl.textContent=o.fmt(v); o.set(v); };
+  inp.addEventListener('input',run); run();
+  return inp;
+}
+function uiToggle(parent,o){
+  const l=document.createElement('label'); l.className='tog'+(o.danger?' danger':'');
+  l.innerHTML='<input type="checkbox"'+(o.checked?' checked':'')+(o.disabled?' disabled':'')+'>'+
+    '<span><span class="t1">'+o.label+(o.hyp?'<span class="hyp">가설</span>':'')+'</span><br><span class="t2">'+o.desc+'</span></span>';
+  parent.appendChild(l);
+  const inp=l.querySelector('input');
+  inp.addEventListener('change',()=>o.set(inp.checked));
+  return inp;
+}
+function uiSegment(parent,o){
+  const d=document.createElement('div'); d.className='seg';
+  o.options.forEach((op,i)=>{
+    const b=document.createElement('button'); b.textContent=op.label; b.dataset.v=op.v;
+    if(op.v===o.val) b.classList.add('on');
+    b.addEventListener('click',()=>{ d.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); o.set(op.v); });
+    d.appendChild(b);
+  });
+  parent.appendChild(d); return d;
+}
+
+/* ── 시계열 차트 ── */
+function drawChart(cv,cfg){
+  const cc=cv.getContext('2d'), W=cv.width, H=cv.height, P=34;
+  cc.clearRect(0,0,W,H); cc.fillStyle='#171A1F'; cc.fillRect(0,0,W,H);
+  cc.strokeStyle='#2A2E36'; cc.lineWidth=1;
+  for(let g=0;g<=4;g++){ const y=P+(H-P*1.4)*g/4; cc.beginPath(); cc.moveTo(P,y); cc.lineTo(W-8,y); cc.stroke(); }
+  const xOf=d=>P+(W-P-8)*(d/cfg.xmax), yOf=v=>P+(H-P*1.4)*(1-clamp(v,0,1));
+  cc.strokeStyle='#3A4450'; cc.setLineDash([3,3]);
+  (cfg.marks||[]).forEach(m=>{ cc.beginPath(); cc.moveTo(xOf(m.x),P-8); cc.lineTo(xOf(m.x),H-12); cc.stroke(); });
+  cc.setLineDash([]);
+  cc.fillStyle='#70747C'; cc.font='10px ui-monospace,monospace';
+  (cfg.marks||[]).forEach(m=>cc.fillText(m.label,xOf(m.x)+3,H-2));
+  cc.fillText('100%',4,P+4); cc.fillText('0',4,H-P*0.4+4);
+  if(cfg.ref!==undefined){ cc.strokeStyle='#5A3A38'; cc.setLineDash([2,4]); cc.beginPath(); cc.moveTo(P,yOf(cfg.ref)); cc.lineTo(W-8,yOf(cfg.ref)); cc.stroke(); cc.setLineDash([]); }
+  cfg.series.forEach(s=>{
+    if(s.pts.length<2) return;
+    cc.strokeStyle=s.color; cc.lineWidth=1.7; cc.beginPath();
+    s.pts.forEach((p,n)=>{ const x=xOf(p[0]), y=yOf(p[1]); n===0?cc.moveTo(x,y):cc.lineTo(x,y); });
+    cc.stroke();
+  });
+  cc.font='11px -apple-system,sans-serif'; let lx=P+4;
+  cfg.series.forEach(s=>{ cc.fillStyle=s.color; cc.fillText(s.name,lx,P-10); lx+=cc.measureText(s.name).width+14; });
+}
+
+/* ── 카메라 오빗 ── */
+function makeOrbit(camera,el,st){
+  const place=()=>{ camera.position.set(st.r*Math.cos(st.b)*Math.sin(st.a),st.r*Math.sin(st.b),st.r*Math.cos(st.b)*Math.cos(st.a)); camera.lookAt(0,0,0); };
+  place();
+  let drag=false,px=0,py=0,active=()=>true;
+  el.addEventListener('pointerdown',e=>{drag=true;px=e.clientX;py=e.clientY;el.setPointerCapture(e.pointerId)});
+  el.addEventListener('pointerup',()=>{drag=false});
+  el.addEventListener('pointermove',e=>{ if(!drag||!active()) return;
+    st.a-=(e.clientX-px)*0.006; st.b=clamp(st.b+(e.clientY-py)*0.005,0.06,1.45); px=e.clientX; py=e.clientY; place(); });
+  el.addEventListener('wheel',e=>{ if(!active()) return; e.preventDefault(); st.r=clamp(st.r*(1+Math.sign(e.deltaY)*0.09),60,600); place(); },{passive:false});
+  return {place, setActive:f=>{active=f}};
+}
+
+/* ── 3D 이름표 (항상 카메라를 향하는 스프라이트) ── */
+function makeLabel(text,color,worldW,bg){
+  const cv=document.createElement('canvas'); cv.width=320; cv.height=80; const c=cv.getContext('2d');
+  c.clearRect(0,0,320,80);
+  c.font='600 30px -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  const tw=Math.min(300,c.measureText(text).width+28);
+  c.fillStyle=bg||'rgba(14,16,20,0.80)'; c.fillRect(160-tw/2,14,tw,52);
+  c.fillStyle=color; c.textAlign='center'; c.textBaseline='middle'; c.fillText(text,160,40);
+  const tex=new THREE.CanvasTexture(cv); tex.minFilter=THREE.LinearFilter;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,depthWrite:false}));
+  sp.scale.set(worldW,worldW/4,1); sp.renderOrder=20; return sp;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   모듈 1 — 사면 중력식 (이온흡착형, 불포화 중력배수)
+   ═══════════════════════════════════════════════════════════ */
+const Slope=(function(){
+const NX=40, NY=24, NZ=28, DX=2.5, DY=2.5, DZ=2.5;
+const LX=NX*DX, LY=NY*DY, Z0=6, LZ=NZ*DZ;
+const N=NX*NY*NZ, NXY=NX*NY;
+const ID=(i,j,k)=>i+j*NX+k*NXY;
+const ZC=k=>Z0+(k+0.5)*DZ;
+function terrainZ(x,y){ const t=clamp(x/LX,0,1), s=t*t*(3-2*t); return 72-44*s+1.8*Math.sin((y/LY)*Math.PI*1.6)*(1-0.5*t); }
+
+const D_TOP=1.5, D_ORE=11.5, D_SEMI=18.0;
+const KS=[7.08,2.59,1.30,3.8e-4];          // m/d  Yuan et al. 2025 Table 1
+const THS=[0.42,0.40,0.36,0.08], THR=[0.06,0.08,0.08,0.02];
+const COH=[[32,27],[35,30],[40,35],[70,65]], PHI=[[20,18],[28,25],[30,30],[45,42]];
+const RE_MOLAR=0.140;
+const PHASE_LEACH=35, PHASE_PUSH=77, PHASE_END=120;
+const SLOPE=0.42, KH=40;
+
+const mat=new Int8Array(N), ks=new Float32Array(N), ws=new Float32Array(N), wr=new Float32Array(N);
+const w=new Float32Array(N), Ml=new Float32Array(N), Mr=new Float32Array(N), Sr=new Float32Array(N), Sr0=new Float32Array(N);
+const qz=new Float32Array(N), qx=new Float32Array(N), topK=new Int16Array(NXY);
+const trench=[], pumpb=[];
+
+const S={ day:0, mode:0, clip:0.45,
+  inj:0.042, conc:250, grade:0.050, KR:0.30,
+  gh:false, cw:false, pb:false, gap:false,
+  reWater:0, reRE:0, lsWater:0, lsRE:0, inWater:0, reagent:0, lsRun:0, lsBot:0, lsSide:0,
+  totalSr0:1, liquor:0, seep:0, fs:99, hist:[] };
+
+function buildGeology(){
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const zt=terrainZ((i+0.5)*DX,(j+0.5)*DY); let tk=-1;
+    for(let k=NZ-1;k>=0;k--){
+      const c=ID(i,j,k), d=zt-ZC(k);
+      const m = d<0?-1 : d<D_TOP?0 : d<D_ORE?1 : d<D_SEMI?2 : 3;
+      mat[c]=m; if(m>=0&&tk<0) tk=k;
+    }
+    topK[i+j*NX]=tk;
+  }
+}
+function rebuildProps(){
+  trench.length=0; pumpb.length=0;
+  const iT=Math.floor(NX*0.90);
+  for(let c=0;c<N;c++){
+    const m=mat[c]; if(m<0){ks[c]=0;ws[c]=0;wr[c]=0;continue;}
+    const i=c%NX, j=Math.floor(c/NX)%NY;
+    let kk=KS[m];
+    if(S.gap&&m===3&&i>=16&&i<=25&&j>=7&&j<=16) kk=0.6;
+    if(S.cw&&i>=NX-2) kk=1e-7;
+    ks[c]=kk; ws[c]=THS[m]*DZ; wr[c]=THR[m]*DZ;
+  }
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++) for(let k=0;k<NZ;k++){
+    if(mat[ID(i,j,k)]===3&&k+1<NZ&&mat[ID(i,j,k+1)]===2){
+      if(i>=iT) trench.push(ID(i,j,k+1)); else if(S.pb&&i>=iT-4) pumpb.push(ID(i,j,k+1)); break; } }
+}
+function reset(){
+  S.day=0; S.reWater=S.reRE=S.lsWater=S.lsRE=S.inWater=S.reagent=0; S.liquor=0; S.seep=0; S.fs=99; S.hist=[];
+  S.lsRun=S.lsBot=S.lsSide=0;
+  rebuildProps();
+  let tot=0; const molPerM3=(S.grade/100)*1900/0.330*2;
+  for(let c=0;c<N;c++){
+    const m=mat[c]; if(m<0){w[c]=0;Ml[c]=0;Mr[c]=0;Sr[c]=0;Sr0[c]=0;continue;}
+    w[c]=THR[m]*DZ; Ml[c]=0; Mr[c]=0;
+    const s=(m===1)?molPerM3*DZ:0; Sr[c]=s; Sr0[c]=s; tot+=s*DX*DY;
+  }
+  S.totalSr0=Math.max(tot,1e-9); computeFs();
+  if(disp) disp.fill(0);
+}
+function zoneActive(i){
+  const f=i/NX, d=S.day; if(d>PHASE_PUSH) return false;
+  if(f<0.33) return d>=0; if(f<0.66) return d>=5; if(f<0.92) return d>=10; return false;
+}
+function step(dt){
+  const cInj = S.day>=PHASE_LEACH ? 0 : S.conc;
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    if(!zoneActive(i)) continue; const tk=topK[i+j*NX]; if(tk<0) continue;
+    const c=ID(i,j,tk), add=S.inj*dt;
+    w[c]+=add; Ml[c]+=add*cInj; S.inWater+=add*DX*DY; S.reagent+=add*DX*DY*cInj*0.132/1000;
+    if(w[c]>ws[c]){ const ov=w[c]-ws[c], f=ov/w[c];
+      S.lsWater+=ov*DX*DY; S.lsRE+=Mr[c]*f*DX*DY; S.lsRun+=ov*DX*DY; Ml[c]-=Ml[c]*f; Mr[c]-=Mr[c]*f; w[c]=ws[c]; }
+  }
+  for(let c=0;c<N;c++){
+    if(mat[c]!==1||Sr[c]<=0||w[c]<=0) continue;
+    const cl=Ml[c]/w[c]; if(cl<1) continue;
+    const Se=clamp((w[c]-wr[c])/(ws[c]-wr[c]),0,1);
+    let r=S.KR*Sr[c]*(cl/(KH+cl))*Se*dt; r=Math.min(r,Sr[c],Ml[c]/1.5);
+    Sr[c]-=r; Mr[c]+=r; Ml[c]-=1.5*r;
+  }
+  qz.fill(0);
+  for(let k=NZ-1;k>=0;k--)for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const c=ID(i,j,k); if(mat[c]<0) continue; const av=w[c]-wr[c]; if(av<=1e-9) continue;
+    const Se=Math.min(1,av/(ws[c]-wr[c])), Ka=ks[c]*Se*Se*Se;
+    if(k===0){ qz[c]=Math.min(Ka*dt,av); continue; }
+    const b=ID(i,j,k-1), Kf=(Ka+ks[b])>0?2*Ka*ks[b]/(Ka+ks[b]):0;
+    qz[c]=Math.min(Kf*dt,av,Math.max(0,ws[b]-w[b]));
+  }
+  for(let k=0;k<NZ;k++)for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const c=ID(i,j,k), q=qz[c]; if(q<=0) continue;
+    const f=q/w[c], dl=Ml[c]*f, dr=Mr[c]*f; w[c]-=q; Ml[c]-=dl; Mr[c]-=dr;
+    if(k===0){ S.lsWater+=q*DX*DY; S.lsRE+=dr*DX*DY; S.lsBot+=q*DX*DY; }
+    else { const b=ID(i,j,k-1); w[b]+=q; Ml[b]+=dl; Mr[b]+=dr; }
+  }
+  qx.fill(0);
+  for(let k=0;k<NZ;k++)for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const c=ID(i,j,k); if(mat[c]<0) continue; const av=w[c]-wr[c]; if(av<=1e-9) continue;
+    const Se=Math.min(1,av/(ws[c]-wr[c])); if(Se<0.80) continue;
+    const Ka=ks[c]*Se*Se*Se;
+    if(i===NX-1){ qx[c]=S.cw?0:Math.min(Ka*SLOPE*dt,av*0.5); continue; }
+    const t=ID(i+1,j,k); if(mat[t]<0) continue;
+    const Kf=(Ka+ks[t])>0?2*Ka*ks[t]/(Ka+ks[t]):0;
+    qx[c]=Math.min(Kf*SLOPE*dt,av*0.5,Math.max(0,ws[t]-w[t]));
+  }
+  for(let k=0;k<NZ;k++)for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const c=ID(i,j,k), q=qx[c]; if(q<=0) continue;
+    const f=q/w[c], dl=Ml[c]*f, dr=Mr[c]*f; w[c]-=q; Ml[c]-=dl; Mr[c]-=dr;
+    if(i===NX-1){ S.lsWater+=q*DX*DY; S.lsRE+=dr*DX*DY; S.lsSide+=q*DX*DY; }
+    else { const t=ID(i+1,j,k); w[t]+=q; Ml[t]+=dl; Mr[t]+=dr; }
+  }
+  let eff=0.55; if(S.gh) eff+=0.15; if(S.cw) eff+=0.12; if(S.pb) eff+=0.08; eff=Math.min(eff,0.92);
+  let rw=0, rr=0;
+  const drain=(list,e)=>{ for(let n=0;n<list.length;n++){ const c=list[n], av=w[c]-wr[c]; if(av<=1e-9) continue;
+    const q=Math.min(av,e*av*(dt/0.5)), f=q/w[c], dl=Ml[c]*f, dr=Mr[c]*f; w[c]-=q; Ml[c]-=dl; Mr[c]-=dr; rw+=q*DX*DY; rr+=dr*DX*DY; } };
+  drain(trench,eff); drain(pumpb,eff*0.5);
+  S.reWater+=rw; S.reRE+=rr; S.liquor = rw>1e-9 ? (rr/rw)*RE_MOLAR : S.liquor*0.9;
+  S.day+=dt;
+}
+/* Bishop 간이법 원호 탐색 (중앙 종단면) */
+function sectionFs(){
+  const j=Math.floor(NY/2), zg=new Float32Array(NX), stZ=new Float32Array(NX), cw=[];
+  for(let i=0;i<NX;i++){ zg[i]=terrainZ((i+0.5)*DX,(j+0.5)*DY); stZ[i]=-1e9;
+    const col=new Float32Array(NZ+1); let acc=0;
+    for(let k=NZ-1;k>=0;k--){ const c=ID(i,j,k);
+      if(mat[c]>=0){ acc+=(15+9.81*(w[c]/DZ))*DZ; const Se=(w[c]-wr[c])/Math.max(ws[c]-wr[c],1e-9); if(Se>0.92&&stZ[i]<-1e8) stZ[i]=ZC(k)+DZ/2; }
+      col[k]=acc; }
+    cw.push(col); }
+  const wAt=(i,z)=>{ if(z>=zg[i]) return 0; let k=Math.floor((z-Z0)/DZ); if(k<0) return cw[i][0]; if(k>NZ-1) return 0;
+    const fr=clamp((Z0+(k+1)*DZ-z)/DZ,0,1); return cw[i][k+1]+(cw[i][k]-cw[i][k+1])*fr; };
+  const stAt=(i,z)=>{ let k=clamp(Math.floor((z-Z0)/DZ),0,NZ-1); const c=ID(i,j,k); let m=mat[c]; if(m<0) m=0;
+    const Se=(w[c]-wr[c])/Math.max(ws[c]-wr[c],1e-9), sat=Se>0.8?1:0; let cc=COH[m][sat], pp=PHI[m][sat];
+    if(m===1&&Sr0[c]>0){ const r=0.70+0.30*(Sr[c]/Sr0[c]); cc*=r; pp*=r; }
+    return [cc,pp,(stZ[i]>z)?9.81*(stZ[i]-z):0]; };
+  let best=99;
+  for(let xi=0.30;xi<=1.06;xi+=0.15){ const xc=xi*LX, zb=terrainZ(clamp(xc,0,LX),(j+0.5)*DY);
+    for(let dz=12;dz<=72;dz+=12){ const zc=zb+dz;
+      for(let R=Math.max(dz+4,22);R<=118;R+=13){
+        const sl=[]; let broke=false;
+        for(let i=0;i<NX;i++){ const x=(i+0.5)*DX, d=x-xc; if(Math.abs(d)>=R-0.01) continue;
+          const rt=Math.sqrt(R*R-d*d), za=zc-rt; if(za>=zg[i]-0.8) continue; if(za<Z0+1){broke=true;break;}
+          const h=wAt(i,za); if(h<=0) continue; const st=stAt(i,za);
+          sl.push({W:h*DX,b:DX,a:-Math.atan(d/rt),c:st[0],tp:Math.tan(st[1]*Math.PI/180),u:st[2]}); }
+        if(broke||sl.length<6) continue;
+        let Fs=1.3, bad=false;
+        for(let it=0;it<18;it++){ let nu=0,de=0;
+          for(let n=0;n<sl.length;n++){ const q=sl[n], ma=Math.cos(q.a)+Math.sin(q.a)*q.tp/Fs; if(ma<0.2){bad=true;break;}
+            nu+=(q.c*q.b+Math.max(0,q.W-q.u*q.b)*q.tp)/ma; de+=q.W*Math.sin(q.a); }
+          if(bad||de<=1e-6){bad=true;break;} const nf=nu/de; if(Math.abs(nf-Fs)<1e-4){Fs=nf;break;} Fs=nf; }
+        if(!bad&&Fs>0.05&&Fs<best) best=Fs;
+      } } }
+  return best;
+}
+function computeFs(){
+  S.fs=sectionFs(); let sm=0;
+  for(let j=1;j<NY;j+=3)for(let i=1;i<NX;i+=3){ let top=-1,bot=-1;
+    for(let k=NZ-1;k>=0;k--){ const c=ID(i,j,k); if(mat[c]<0) continue; const Se=(w[c]-wr[c])/Math.max(ws[c]-wr[c],1e-9); if(Se>0.92){ if(top<0) top=ZC(k); bot=ZC(k); } }
+    if(top>0) sm=Math.max(sm,top-bot+DZ); }
+  S.seep=sm;
+}
+function stored(){ let st=0; for(let c=0;c<N;c++) if(mat[c]>=0) st+=(w[c]-THR[mat[c]]*DZ)*DX*DY; return st; }
+
+/* ── 3D ── */
+let scene, camera, root, clipPlane, topMesh, glowGeo, faceCv, faceCtx, faceTex, faceMesh, wellLines, wellIdx=[], trenchMat, flowPts, flowGeo, wallMesh;
+let disp=null;
+const cam={a:-0.62,b:0.30,r:190};
+function build3D(){
+  scene=new THREE.Scene(); scene.background=new THREE.Color(0x0E1014);
+  camera=new THREE.PerspectiveCamera(42,1,1,900);
+  root=new THREE.Group(); root.position.set(-LX/2,-40,-LY/2); scene.add(root);
+  scene.add(new THREE.AmbientLight(0xffffff,0.55));
+  const dl=new THREE.DirectionalLight(0xfff3e0,0.9); dl.position.set(-70,130,90); scene.add(dl);
+  const dl2=new THREE.DirectionalLight(0x88aadd,0.35); dl2.position.set(90,40,-60); scene.add(dl2);
+  clipPlane=new THREE.Plane(new THREE.Vector3(0,0,-1),0);
+  const COLV=[[0.36,0.28,0.19],[0.63,0.35,0.16],[0.48,0.46,0.42],[0.26,0.29,0.34]];
+  const BANDS=[[0,D_TOP,0],[D_TOP,D_ORE,1],[D_ORE,D_SEMI,2],[D_SEMI,1e4,3]];
+  const topGeo=new THREE.PlaneBufferGeometry(LX,LY,NX-1,NY-1);
+  { const p=topGeo.attributes.position; for(let n=0;n<p.count;n++){ const x=p.getX(n)+LX/2, y=-p.getY(n)+LY/2; p.setZ(n,terrainZ(x,y)); } topGeo.computeVertexNormals(); }
+  topMesh=new THREE.Mesh(topGeo,new THREE.MeshLambertMaterial({color:0x6E5942,side:THREE.DoubleSide,clippingPlanes:[clipPlane]}));
+  topMesh.rotation.x=-Math.PI/2; topMesh.position.set(LX/2,0,LY/2); root.add(topMesh);
+  glowGeo=topGeo.clone();
+  { const p=glowGeo.attributes.position; for(let n=0;n<p.count;n++) p.setZ(n,p.getZ(n)+0.4); glowGeo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(p.count*3),3)); }
+  const glow=new THREE.Mesh(glowGeo,new THREE.MeshBasicMaterial({vertexColors:true,blending:THREE.AdditiveBlending,transparent:true,depthWrite:false,side:THREE.DoubleSide,clippingPlanes:[clipPlane]}));
+  glow.rotation.x=-Math.PI/2; glow.position.set(LX/2,0,LY/2); glow.renderOrder=1; root.add(glow);
+  { const P=[],C=[]; const quad=(p0,p1,p2,p3,c)=>{[p0,p1,p2,p0,p2,p3].forEach(q=>{P.push(q[0],q[1],q[2]);C.push(c[0],c[1],c[2]);});};
+    const edgeX=zc=>{ for(let i=0;i<NX;i++){ const x0=i*DX,x1=(i+1)*DX,e0=terrainZ(x0,zc),e1=terrainZ(x1,zc);
+      for(const B of BANDS){ const a0=e0-B[0],a1=e1-B[0],b0=Math.max(Z0,e0-B[1]),b1=Math.max(Z0,e1-B[1]); if(a0<=b0&&a1<=b1) continue; quad([x0,a0,zc],[x1,a1,zc],[x1,b1,zc],[x0,b0,zc],COLV[B[2]]); } } };
+    const edgeZ=xc=>{ for(let j=0;j<NY;j++){ const y0=j*DY,y1=(j+1)*DY,e0=terrainZ(xc,y0),e1=terrainZ(xc,y1);
+      for(const B of BANDS){ const a0=e0-B[0],a1=e1-B[0],b0=Math.max(Z0,e0-B[1]),b1=Math.max(Z0,e1-B[1]); if(a0<=b0&&a1<=b1) continue; quad([xc,a0,y0],[xc,a1,y1],[xc,b1,y1],[xc,b0,y0],COLV[B[2]]); } } };
+    edgeX(0); edgeX(LY); edgeZ(0); edgeZ(LX); quad([0,Z0,0],[LX,Z0,0],[LX,Z0,LY],[0,Z0,LY],[0.13,0.14,0.17]);
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(P,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(C,3)); g.computeVertexNormals();
+    root.add(new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide,clippingPlanes:[clipPlane]}))); }
+  faceCv=document.createElement('canvas'); faceCv.width=440; faceCv.height=308; faceCtx=faceCv.getContext('2d');
+  faceTex=new THREE.CanvasTexture(faceCv);
+  faceMesh=new THREE.Mesh(new THREE.PlaneBufferGeometry(LX,LZ),new THREE.MeshBasicMaterial({map:faceTex,side:THREE.DoubleSide,transparent:true}));
+  faceMesh.renderOrder=3; faceMesh.position.set(LX/2,Z0+LZ/2,0); root.add(faceMesh);
+  { const pts=[],col=[]; for(let i=2;i<NX*0.92;i+=4)for(let j=2;j<NY;j+=4){ const x=(i+0.5)*DX,y=(j+0.5)*DY,zt=terrainZ(x,y); pts.push(x,zt+4,y,x,zt-D_ORE+2,y); col.push(.43,.45,.50,.43,.45,.50); wellIdx.push(i); }
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+    wellLines=new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.95})); wellLines.renderOrder=2; root.add(wellLines); }
+  { const x=LX*0.955, zt=terrainZ(x,LY/2)-D_ORE+1.5;
+    trenchMat=new THREE.MeshLambertMaterial({color:0xC98A2E,emissive:0x1A1002,clippingPlanes:[clipPlane]});
+    const mesh=new THREE.Mesh(new THREE.BoxBufferGeometry(5,2.2,LY),trenchMat); mesh.position.set(x,zt,LY/2); root.add(mesh);
+    const NM=16; flowGeo=new THREE.BufferGeometry(); flowGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NM*3),3));
+    flowPts=new THREE.Points(flowGeo,new THREE.PointsMaterial({color:0xFFE0A0,size:4.2,sizeAttenuation:true,transparent:true,opacity:0,depthWrite:false}));
+    flowPts.renderOrder=4; root.add(flowPts); flowPts.userData={x:x,z:zt+1.6,NM:NM}; }
+  wallMesh=new THREE.Mesh(new THREE.BoxBufferGeometry(1.8,26,LY),new THREE.MeshLambertMaterial({color:0xAEB6C0,clippingPlanes:[clipPlane]}));
+  wallMesh.position.set(LX-2,terrainZ(LX-2,LY/2)-13,LY/2); wallMesh.visible=false; root.add(wallMesh);
+  disp=new Float32Array(N);
+  applyClip();
+}
+function applyClip(){ clipPlane.constant=S.clip*LY-LY/2; faceMesh.position.z=S.clip*LY-0.05; faceMesh.visible=S.clip<0.99; }
+
+const MODES=[{key:'lix',label:'침출액',lo:'없음',hi:'주입 농도',title:'침출액 (황산암모늄)'},
+             {key:'liquor',label:'모액',lo:'0 g/L',hi:'약 3 g/L',title:'모액 (용액 중 희토류)'},
+             {key:'sat',label:'포화도',lo:'건조',hi:'포화',title:'침출액 포화도'},
+             {key:'prog',label:'침출 진행도',lo:'미침출',hi:'완전 침출',title:'침출 진행도'}];
+function fieldValue(c,m){ if(w[c]<=0) return 0;
+  if(m===0) return Math.sqrt(Math.min(1,(Ml[c]/w[c])/Math.max(S.conc,1)));
+  if(m===1) return Math.sqrt(Math.min(1,(Mr[c]/w[c])*RE_MOLAR/3.0));
+  if(m===2) return ((w[c]-wr[c])/Math.max(ws[c]-wr[c],1e-9)-0.12)/0.88;
+  return Sr0[c]>0?1-Sr[c]/Sr0[c]:0; }
+function updateField(){
+  const key=MODES[S.mode].key, ca=glowGeo.attributes.color.array, colMax=new Float32Array(NXY);
+  for(let k=0;k<NZ;k++)for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const c=ID(i,j,k); if(mat[c]<0) continue;
+    const t=clamp(fieldValue(c,S.mode),0,1); disp[c]+=(t-disp[c])*0.16; const q=i+j*NX; if(disp[c]>colMax[q]) colMax[q]=disp[c]; }
+  for(let n=0;n<glowGeo.attributes.color.count;n++){ const i=n%NX,j=Math.floor(n/NX), v=colMax[Math.min(NXY-1,i+j*NX)], g=v*v*0.85, rg=ramp(key,v);
+    ca[n*3]=rg[0]*g; ca[n*3+1]=rg[1]*g; ca[n*3+2]=rg[2]*g; }
+  glowGeo.attributes.color.needsUpdate=true;
+}
+function drawSection(){
+  const ctx=faceCtx, W=faceCv.width, H=faceCv.height, j=clamp(Math.round(S.clip*NY)-1,0,NY-1), key=MODES[S.mode].key;
+  ctx.clearRect(0,0,W,H); const cw=W/NX, ch=H/NZ, COLM=['#5C4830','#A25A28','#7C776C','#454D58'];
+  for(let k=0;k<NZ;k++)for(let i=0;i<NX;i++){ const c=ID(i,j,k), m=mat[c]; if(m<0) continue; const X=i*cw, Y=H-(k+1)*ch;
+    ctx.fillStyle=COLM[m]; ctx.fillRect(X,Y,cw+0.8,ch+0.8); const v=disp[c];
+    if(v>0.012){ const rg=ramp(key,v); ctx.fillStyle=rgbStr(rg[0],rg[1],rg[2],0.14+0.80*v); ctx.fillRect(X,Y,cw+0.8,ch+0.8); } }
+  const zY=z=>H-((z-Z0)/LZ)*H;
+  ctx.strokeStyle='#8A8577'; ctx.lineWidth=1.6; ctx.beginPath(); for(let i=0;i<NX;i++){ const Y=zY(terrainZ((i+0.5)*DX,(j+0.5)*DY)); i===0?ctx.moveTo(i*cw,Y):ctx.lineTo(i*cw,Y); } ctx.stroke();
+  ctx.strokeStyle='#6E7C8C'; ctx.lineWidth=1.3; ctx.setLineDash([5,4]); ctx.beginPath(); for(let i=0;i<NX;i++){ const Y=zY(terrainZ((i+0.5)*DX,(j+0.5)*DY)-D_SEMI); i===0?ctx.moveTo(i*cw,Y):ctx.lineTo(i*cw,Y); } ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#5FD8F0'; ctx.lineWidth=2.2; let run=false; ctx.beginPath();
+  for(let i=0;i<NX;i++){ let zt=-1; for(let k=NZ-1;k>=0;k--){ const c=ID(i,j,k); if(mat[c]<0) continue; if((w[c]-wr[c])/Math.max(ws[c]-wr[c],1e-9)>0.90){ zt=ZC(k)+DZ/2; break; } }
+    if(zt>0){ const Y=zY(zt), X=(i+0.5)*cw; run?ctx.lineTo(X,Y):ctx.moveTo(X,Y); run=true; } else run=false; } ctx.stroke();
+  { const i=Math.floor(NX*0.955), z=terrainZ((i+0.5)*DX,(j+0.5)*DY)-D_ORE+1.5, X=(i+0.5)*cw, Y=zY(z);
+    ctx.fillStyle='#C98A2E'; ctx.fillRect(X-cw*1.1,Y-ch*0.5,cw*2.2,ch*0.9); ctx.strokeStyle='#F0C060'; ctx.lineWidth=1; ctx.strokeRect(X-cw*1.1,Y-ch*0.5,cw*2.2,ch*0.9); }
+  if(S.gap&&j>=7&&j<=16){ for(let i=16;i<=25;i++){ const Y=zY(terrainZ((i+0.5)*DX,(j+0.5)*DY)-D_SEMI); ctx.fillStyle='rgba(226,87,76,0.55)'; ctx.fillRect(i*cw,Y-2,cw+0.8,H-(Y-2)); } }
+  if(S.cw){ const i=NX-2, X=i*cw, Y=zY(terrainZ((i+0.5)*DX,(j+0.5)*DY)); ctx.fillStyle='#AEB6C0'; ctx.fillRect(X,Y,cw*1.6,H); }
+  if(S.day>0&&S.day<PHASE_PUSH){ ctx.strokeStyle='rgba(80,225,245,0.95)'; ctx.lineWidth=2;
+    for(let i=2;i<NX*0.92;i+=4){ if(!zoneActive(i)) continue; const Y=zY(terrainZ((i+0.5)*DX,(j+0.5)*DY)), X=(i+0.5)*cw;
+      ctx.beginPath(); ctx.moveTo(X,Y-11); ctx.lineTo(X,Y+2); ctx.moveTo(X-3,Y-2); ctx.lineTo(X,Y+2); ctx.lineTo(X+3,Y-2); ctx.stroke(); } }
+  faceTex.needsUpdate=true;
+}
+function tick(t){
+  updateField();
+  const a=wellLines.geometry.attributes.color.array, pulse=0.55+0.45*Math.sin(t*4.2);
+  for(let n=0;n<wellIdx.length;n++){ const on=zoneActive(wellIdx[n])&&S.day<PHASE_PUSH, o=n*6;
+    if(on){ a[o]=0.25*pulse;a[o+1]=0.85*pulse;a[o+2]=0.92*pulse;a[o+3]=0.12;a[o+4]=0.40;a[o+5]=0.50; }
+    else { a[o]=a[o+3]=0.34;a[o+1]=a[o+4]=0.36;a[o+2]=a[o+5]=0.40; } }
+  wellLines.geometry.attributes.color.needsUpdate=true;
+  const u=flowPts.userData, fa=flowGeo.attributes.position.array, lim=S.clip*LY;
+  for(let n=0;n<u.NM;n++){ const y=((t*7+n*(LY/u.NM))%LY); fa[n*3]=u.x; fa[n*3+1]=u.z; fa[n*3+2]=(y<=lim)?y:-999; }
+  flowGeo.attributes.position.needsUpdate=true;
+  const act=Math.min(1,S.liquor/1.5); flowPts.material.opacity=0.1+0.85*act; trenchMat.emissive.setRGB(0.10+0.30*act,0.06+0.18*act,0.01);
+}
+let acc=0;
+function advance(nSub){ const DT=0.05;
+  for(let n=0;n<nSub;n++){ if(S.day>=PHASE_END) break; step(DT); acc+=DT;
+    if(acc>=1.0){ acc=0; computeFs(); S.hist.push({d:S.day,rf:S.reRE/S.totalSr0*100,ls:S.inWater>0?S.lsWater/S.inWater*100:0,fs:Math.min(S.fs,2),cc:S.liquor}); } }
+}
+function buildControls(root){
+  root.innerHTML='';
+  let sec=uiSection(root,'주입 조건','상·중·하 3개 구역을 5일 간격으로 순차 주입. 0–35일 침출, 35–77일 정수, 77–120일 배수·모니터링.');
+  uiSlider(sec,{label:'주입강도',min:5,max:150,val:42,fmt:v=>(v/1000).toFixed(3),set:v=>{S.inj=v/1000},src:'m/d · Wang 2022',srcTitle:'Wang et al., Minerals 2022 — 실제 시험채굴장 주입속도 0.0417 m/d'});
+  uiSlider(sec,{label:'침출제 농도',min:5,max:50,val:25,fmt:v=>(v/100).toFixed(2),set:v=>{S.conc=v*10},src:'mol/L · Wu 2023',srcTitle:'Wu et al. 2023 — 0.20~0.25 mol/L가 경제적'});
+  uiSlider(sec,{label:'교환성 희토류 품위',min:10,max:110,val:50,fmt:v=>(v/1000).toFixed(3),set:v=>{S.grade=v/1000; reset();},src:'wt% · Wang 2022 / Cunningham 2025',srcTitle:'이온상 품위 0.007~0.103 wt%. Y·중희토의 98%는 점토·운모(교환성), Ce 94%는 모나자이트(난용성)'});
+  sec=uiSection(root,'유출 억제 조치','켜고 끄며 회수율·유실률·안전율이 같이 움직이는 것을 봅니다.');
+  const refresh=()=>{ wallMesh.visible=S.cw; rebuildProps(); if(api.onLegend) api.onLegend(); };
+  uiToggle(sec,{label:'집액구',desc:'사면 하단, 기반암 경계. 기본 조치',checked:true,disabled:true,set:()=>{}});
+  uiToggle(sec,{label:'도액공',desc:'집액구 상부 수평공. 포집 효율 상향(매개변수)',set:v=>{S.gh=v;refresh();}});
+  uiToggle(sec,{label:'하류 차수벽',desc:'하단 경계 저투수 벽체. 격자 투수계수를 직접 낮춤',set:v=>{S.cw=v;refresh();}});
+  uiToggle(sec,{label:'양수 차단정',desc:'집액구 상류 회수정. 포집 효율 추가 상향(매개변수)',set:v=>{S.pb=v;refresh();}});
+  uiToggle(sec,{label:'기반암 차수층 결손',desc:'중부 사면에 고투수 창. 자연 차수층에만 의존할 때의 위험',danger:true,set:v=>{S.gap=v;refresh();}});
+}
+function legendHTML(){
+  const m=MODES[S.mode];
+  const it=(ic,nm,role)=>ic+'<div class="nm">'+nm+(role?'<span class="role">'+role+'</span>':'')+'</div>';
+  const sw=c=>'<i style="background:'+c+'"></i>', ln=c=>'<i class="ln" style="background:'+c+'"></i>', dsh='<i class="dsh"></i>';
+  let faces=[ it(sw('#6E5942'),'지표면','불투명 · 절개면 안쪽은 잘라냄'),
+    it(sw('#5C4830'),'표토','비광체 · 고투수 7.1 m/d'),
+    it(sw('#A25A28'),'전풍화층','광체 · 교환성 희토류 부존 · 2.6 m/d'),
+    it(sw('#7C776C'),'반풍화층','저품위 전이대 · 1.3 m/d'),
+    it(sw('#454D58'),'기반암','자연 차수층(불투수) · 0.0004 m/d'),
+    it(sw('#C98A2E'),'집액구','사면 하단 호박색 채널 · 모액 회수'),
+    it('<i style="background:linear-gradient(90deg,#1A1E24,#3FCFD6)"></i>','지표 발광','용액이 도달한 구역 (위에서 본 범위)') ];
+  if(S.cw) faces.push(it(sw('#AEB6C0'),'하류 차수벽','저투수 벽체'));
+  if(S.gap) faces.push(it(sw('#E2574C'),'기반암 결손','고투수 창 · 유출 경로'));
+  let lines=[ it(ln('#3FD0E0'),'주입공','세로선 · 주입 중 청록 점멸'),
+    it(ln('#5FD8F0'),'침윤선','절개면 위 실선 · 포화 상단'),
+    it(dsh,'기반암 상면','절개면 위 파선 · 차수 경계'),
+    it(ln('#FFE0A0'),'회수 흐름','집액구 위 이동 점 · 밝을수록 농도 높음') ];
+  if(S.pb) lines.push(it(ln('#C98A2E'),'양수 차단정','집액구 상류'));
+  return '<div class="hd">표시 항목 — '+m.title+'</div><div class="bar2" style="background:'+gradientCSS(m.key)+'"></div><div class="barlbl"><span>'+m.lo+'</span><span>'+m.hi+'</span></div>'+
+    '<div class="hd">면 (색)</div><div class="grp">'+faces.join('')+'</div>'+
+    '<div class="hd">선 · 표식</div><div class="grp">'+lines.join('')+'</div>';
+}
+function ui(){
+  const rf=S.reRE/S.totalSr0*100, ls=S.inWater>0?S.lsWater/S.inWater*100:0, st=stored(), err=S.inWater-S.reWater-S.lsWater-st;
+  let anyOre=false; for(let c=0;c<N;c++) if(mat[c]===1&&w[c]>0&&Ml[c]/w[c]>8){anyOre=true;break;}
+  let ph,cap;
+  if(S.day<=0){ph='주입 전';cap='재생을 누르면 사면 상부 구역부터 침출액이 들어갑니다.';}
+  else if(S.day<PHASE_LEACH){ ph='침출 단계 · '+(S.day<5?'상부':(S.day<10?'상·중부':'전'))+' 구역 주입';
+    cap=S.seep>2?'기반암 위에 정체수가 쌓이면서 침출액이 사면 아래로 흐릅니다.':(anyOre?'침출액이 표토를 지나 광체층(전풍화층)에 도달했습니다.':'침출액이 표토층을 빠르게 통과하는 중입니다. 표토 투수계수가 광체층의 약 3배입니다.'); }
+  else if(S.day<PHASE_PUSH){ ph='정수(頂水) 단계'; cap=S.liquor>0.2?'집액구에서 모액이 회수되고 있습니다. 시약 대신 물을 넣어 잔류 모액을 밀어냅니다.':'시약 주입을 멈추고 물만 넣어 지중에 남은 모액을 집액구 쪽으로 밀어냅니다.'; }
+  else { ph='배수 · 모니터링'; cap='주입을 끝내고 잔류수가 빠지는 구간입니다. 정체수가 줄면서 안전율이 다시 올라갑니다.'; }
+  const warn=[]; if(S.fs<1.1&&S.fs<90) warn.push('안전율이 허용치 1.1 아래입니다.'); if(ls>25) warn.push('주입량의 '+ls.toFixed(0)+'%가 회수되지 않고 빠져나갔습니다.'); if(S.gap) warn.push('기반암 차수층 결손이 켜져 있습니다.');
+  const fsc=S.fs<1.1?'var(--alert)':(S.fs<1.3?'var(--liquor)':'var(--safe)');
+  return {
+    day:Math.floor(S.day), dayUnit:'일차', progress:Math.min(S.day,PHASE_END)/PHASE_END, phase:ph, caption:cap, warn:warn,
+    kpis:[{l:'회수율',v:rf.toFixed(1),u:'%'},{l:'유실률',v:ls.toFixed(1),u:'%'},{l:'최소 안전율',v:S.fs>90?'—':S.fs.toFixed(2),u:'허용 1.1',color:fsc}],
+    chart:{xmax:PHASE_END,marks:[{x:PHASE_LEACH,label:'침출'},{x:PHASE_PUSH,label:'정수'},{x:PHASE_END-2,label:''}],ref:0.55,
+      series:[{name:'회수율',color:'#E0B33C',pts:S.hist.map(h=>[h.d,h.rf/100])},{name:'유실률',color:'#E2574C',pts:S.hist.map(h=>[h.d,h.ls/100])},{name:'안전율 (0–2)',color:'#6FCF97',pts:S.hist.map(h=>[h.d,h.fs/2])}]},
+    chartHint:'안전율은 침출과 함께 떨어졌다가 배수 후 회복합니다.',
+    details:[['모액 농도',S.liquor.toFixed(2),'g/L'],['누적 시약 (황산암모늄)',S.reagent.toFixed(1),'t'],['누적 주입',S.inWater.toFixed(0),'m³'],['침윤선 최고 상승',S.seep.toFixed(1),'m'],
+      ['유실 · 지표 유출',S.lsRun.toFixed(0),'m³'],['유실 · 기반암 저면',S.lsBot.toFixed(0),'m³'],['유실 · 하류 측방',S.lsSide.toFixed(0),'m³'],['물질수지 잔차',Math.abs(err)<0.05?'0.00':err.toFixed(2),'m³']],
+    limits:['<b>화학</b> · 이온교환을 1차 속도식 하나로 대체. Kerr/Gapon 선택계수, 활동도, 음이온 차폐 없음.',
+      '<b>불포화 흐름</b> · Richards 방정식이 아닌 중력 지배 배수 근사. 모관 흡수 무시.',
+      '<b>모액 농도</b> · 현장 실적 0.3~2.0 g/L에 맞춰 속도상수를 낮췄습니다. 실내 컬럼(7~9 g/L)과 다릅니다.',
+      '<b>액/고 비</b> · 120일 기준 L/S≈0.16으로 실제 조업(0.5~1.0)보다 낮아 회수율이 낮게 나옵니다.',
+      '<b>사면</b> · 중앙 종단면 1개에서 Bishop 간이법 원호 탐색. 3차원 효과·인장균열·지진하중 없음.',
+      '<b>투수계수</b> · Yuan 2025 Table 1 상수. 점토 팽윤·신생 점토에 의한 K 변화(Zhang 2024) 미반영.',
+      '<b>스케일</b> · 100×60 m 단일 채굴장. 광역 영향은 단순 면적 환산이 아닙니다.'],
+    tlLabel:'0 – 120 일', tlTicks:[0,5,10,35,77,120], tlPhase1:PHASE_PUSH/PHASE_END, done:S.day>=PHASE_END
+  };
+}
+/* 헤드리스 배치 실행 (비교 탭) */
+function batch(opts){ Object.assign(S,opts||{}); reset(); while(S.day<PHASE_END){ step(0.05); } computeFs();
+  return {recov:S.reRE/S.totalSr0*100, loss:S.lsWater/Math.max(S.inWater,1e-9)*100, water:S.inWater, reagent:S.reagent, fs:S.fs, days:PHASE_END, wells:wellIdx.length, liquor:S.liquor, area:LX*LY};
+}
+const api={ name:'사면 중력식', S, MODES, cam, buildGeology, reset, advance, tick, drawSection, buildControls, legendHTML, ui, batch, applyClip,
+  get scene(){return scene}, get camera(){return camera}, build3D, hasClip:true, onLegend:null,
+  setMode:m=>{S.mode=m}, setClip:v=>{S.clip=v; applyClip();} };
+return api;
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   모듈 2 — 정호 패턴식 (피압대수층, 주입정+회수정, 수리학적 봉쇄)
+   ═══════════════════════════════════════════════════════════ */
+const Pattern=(function(){
+const NX=80, NY=80, B=8, PHI=0.30, N=NX*NY, ID=(i,j)=>i+j*NX;
+let DX=3, DY=3, LX=240, LY=240, V=PHI*B*DX*DY;
+const RE_MOLAR=0.140, KH=40, UCL=0.03;
+
+const S={ day:0, pv:0, mode:0, clip:1.0,
+  K:1.0, grad:0.002, spacing:50, n:2, pattern:'5spot', outerProd:true, Qinj:100, bleed:0.05, conc:250, grade:0.050, KR:0.30, aL:2.0, aT:0.2,
+  iac:false, PV_LEACH:5, PV_END:7, ringDist:25,
+  inWater:0, prodWater:0, injMass:0, prodLix:0, reRE:0, reagent:0, lsOut:0, totalSr0:1, liquor:0, hist:[], restoring:false,
+  alarms:0, escFrac:0, escLeach:0, dtSub:0.1, pvVol:1, pvDays:0, hMin:0, hMax:1, pv50:null, pv80:null, domain:240, qMax:1e9, qEff:100, lossPeak:0, lossNow:0, stepCount:0, useRef:false, refStats:null };
+
+const h=new Float32Array(N), fx=new Float32Array(N), fy=new Float32Array(N), vcx=new Float32Array(N), vcy=new Float32Array(N);
+const Dfx=new Float32Array(N), Dfy=new Float32Array(N);   // 면 분산계수 (m²/d), x면·y면
+const Cl=new Float32Array(N), Cr=new Float32Array(N), Sr=new Float32Array(N), Sr0=new Float32Array(N);
+const ore=new Uint8Array(N), inRing=new Uint8Array(N), dm=new Float32Array(N), dr=new Float32Array(N);
+let wells=[], monitors=[], bounds={x0:0,x1:0,y0:0,y1:0}, disp=null, streams=[], oreCells=[], injCells=[], prodCells=[];
+
+function setDomain(L){ LX=LY=L; DX=DY=L/NX; V=PHI*B*DX*DY; S.domain=L; }
+const cellOf=(x,y)=>[clamp(Math.floor(x/DX),1,NX-2),clamp(Math.floor(y/DY),1,NY-2)];
+function genWells(){
+  const s=S.spacing, n=S.n;
+  const extent=(S.pattern==='7spot')?n*s*1.84+s:(S.pattern==='line'?Math.max(n*s+s,(2*n)*s*0.6+s):n*s+s);
+  setDomain(Math.max(200,extent+2*(S.ringDist+44)));
+  const cx=LX/2, cy=LY/2;
+  wells=[]; const add=(x,y,t)=>{ const [i,j]=cellOf(x,y); wells.push({x:x,y:y,i:i,j:j,type:t,Q:0}); };
+  const A=S.outerProd?'P':'I', Bt=S.outerProd?'I':'P';
+  if(S.pattern==='5spot'){ const half=n*s/2;
+    for(let i=0;i<=n;i++)for(let j=0;j<=n;j++) add(cx-half+i*s,cy-half+j*s,A);
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++) add(cx-half+(i+0.5)*s,cy-half+(j+0.5)*s,Bt);
+  } else if(S.pattern==='7spot'){ const R=n*s*0.92;
+    for(let j=-n-1;j<=n+1;j++)for(let i=-n-2;i<=n+2;i++){ const x=cx+(i+0.5*j)*s, y=cy+j*s*0.8660; if(Math.hypot(x-cx,y-cy)>R) continue;
+      const cen=(((i+2*j)%3)+3)%3===0; add(x,y,cen?Bt:A); }
+  } else { const rows=2*n+1, half=n*s/2, rs=s*0.6;
+    for(let j=0;j<rows;j++){ const t=(j%2===0)?A:Bt, yy=cy-(rows-1)*rs/2+j*rs; for(let i=0;i<=n;i++) add(cx-half+i*s,yy,t); } }
+  const inj=wells.filter(q=>q.type==='I'), prod=wells.filter(q=>q.type==='P');
+  S.qMax=2*Math.PI*S.K*B*15/Math.log(Math.max(S.spacing,1)/0.1);
+  S.qEff=Math.min(S.Qinj,S.qMax);
+  const totalInjNominal=inj.length*S.qEff;
+  const totalProd=Math.max(totalInjNominal*(1+S.bleed),1e-6);
+  inj.forEach(q=>q.Q=S.restoring?0:S.qEff); prod.forEach(q=>q.Q=totalProd/Math.max(prod.length,1));
+  injCells=inj.map(q=>({c:ID(q.i,q.j),Q:q.Q})); prodCells=prod.map(q=>({c:ID(q.i,q.j),Q:q.Q}));
+  let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9; wells.forEach(q=>{x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y);});
+  bounds={x0:x0-s/2,x1:x1+s/2,y0:y0-s/2,y1:y1+s/2};
+  const rx0=bounds.x0-S.ringDist, rx1=bounds.x1+S.ringDist, ry0=bounds.y0-S.ringDist, ry1=bounds.y1+S.ringDist;
+  oreCells=[];
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const x=(i+0.5)*DX,y=(j+0.5)*DY, c=ID(i,j);
+    ore[c]=(x>=bounds.x0&&x<=bounds.x1&&y>=bounds.y0&&y<=bounds.y1)?1:0; if(ore[c]) oreCells.push(c);
+    inRing[c]=(x>=rx0&&x<=rx1&&y>=ry0&&y<=ry1)?1:0; }
+  monitors=[];
+  for(let k=0;k<3;k++){ const f=(k+0.5)/3;
+    [[rx0+(rx1-rx0)*f,ry0],[rx0+(rx1-rx0)*f,ry1],[rx0,ry0+(ry1-ry0)*f],[rx1,ry0+(ry1-ry0)*f]].forEach(p=>{ const [i,j]=cellOf(clamp(p[0],2,LX-2),clamp(p[1],2,LY-2)); monitors.push({x:p[0],y:p[1],i:i,j:j,streak:0,alarm:false,val:0}); }); }
+  S.pvVol=PHI*B*(bounds.x1-bounds.x0)*(bounds.y1-bounds.y0);
+  if(!S.restoring) S.pvDays=S.pvVol/Math.max(totalInjNominal,1e-6);
+}
+function solveHead(){
+  const T=S.K*B, src=new Float32Array(N);
+  wells.forEach(q=>{ src[ID(q.i,q.j)]+=(q.type==='I'?q.Q:-q.Q)/(DX*DY); });
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++) h[ID(i,j)]=-S.grad*(i+0.5)*DX;
+  const om=1.82, k2T=DX*DX/T;
+  for(let it=0;it<800;it++){ let mx=0;
+    for(let j=1;j<NY-1;j++){ const jo=j*NX; for(let i=1;i<NX-1;i++){ const c=jo+i;
+      const hn=0.25*(h[c-1]+h[c+1]+h[c-NX]+h[c+NX]+src[c]*k2T), d=hn-h[c]; h[c]+=om*d; const ad=d<0?-d:d; if(ad>mx) mx=ad; } }
+    if(mx<2e-5) break; }
+  let hmin=1e9,hmax=-1e9;
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const c=ID(i,j);
+    fx[c]=(i<NX-1)?-S.K*(h[c+1]-h[c])/DX:0; fy[c]=(j<NY-1)?-S.K*(h[c+NX]-h[c])/DY:0;
+    if(h[c]<hmin) hmin=h[c]; if(h[c]>hmax) hmax=h[c]; }
+  S.hMin=hmin; S.hMax=hmax;
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const c=ID(i,j);
+    vcx[c]=0.5*((i>0?fx[c-1]:fx[c])+fx[c])/PHI; vcy[c]=0.5*((j>0?fy[c-NX]:fy[c])+fy[c])/PHI; }
+  const wellOut=new Float32Array(N); prodCells.forEach(p=>{wellOut[p.c]+=p.Q;});
+  let dtm=1e9;
+  for(let j=1;j<NY-1;j++)for(let i=1;i<NX-1;i++){ const c=ID(i,j); let out=wellOut[c];
+    if(fx[c]>0) out+=fx[c]*DY*B; if(fx[c-1]<0) out-=fx[c-1]*DY*B; if(fy[c]>0) out+=fy[c]*DX*B; if(fy[c-NX]<0) out-=fy[c-NX]*DX*B;
+    if(out>1e-9) dtm=Math.min(dtm,V/out); }
+  /* 물리 분산: 면 속도로 Dxx, Dyy (교차항 생략) */
+  let Dmax=0; const Dm=1e-9*86400, aLe=Math.max(0,S.aL-0.5*DX), aTe=S.aT;   // 유효 = 목표 − 풍상차분 수치분산(Δx/2)
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const c=ID(i,j);
+    { const vx=fx[c]/PHI, vy=0.5*(vcy[c]+(i<NX-1?vcy[c+1]:vcy[c])), sp=Math.hypot(vx,vy); Dfx[c]=sp>1e-12?(aLe*vx*vx+aTe*vy*vy)/sp+Dm:Dm; }
+    { const vy=fy[c]/PHI, vx=0.5*(vcx[c]+(j<NY-1?vcx[c+NX]:vcx[c])), sp=Math.hypot(vx,vy); Dfy[c]=sp>1e-12?(aLe*vy*vy+aTe*vx*vx)/sp+Dm:Dm; }
+    if(Dfx[c]>Dmax) Dmax=Dfx[c]; if(Dfy[c]>Dmax) Dmax=Dfy[c]; }
+  const dtD=Dmax>1e-12?0.2*DX*DX/Dmax:1e9;
+  S.dtSub=clamp(Math.min(0.7*dtm,dtD),0.01,0.6);
+  traceStreams();
+}
+function velAt(x,y){ const gx=clamp(x/DX-0.5,0,NX-1.001), gy=clamp(y/DY-0.5,0,NY-1.001), i=Math.floor(gx), j=Math.floor(gy), a=gx-i, b=gy-j;
+  const c00=ID(i,j), c10=ID(Math.min(i+1,NX-1),j), c01=ID(i,Math.min(j+1,NY-1)), c11=ID(Math.min(i+1,NX-1),Math.min(j+1,NY-1));
+  return [(vcx[c00]*(1-a)+vcx[c10]*a)*(1-b)+(vcx[c01]*(1-a)+vcx[c11]*a)*b, (vcy[c00]*(1-a)+vcy[c10]*a)*(1-b)+(vcy[c01]*(1-a)+vcy[c11]*a)*b]; }
+function traceStreams(){
+  streams=[]; const prod=wells.filter(q=>q.type==='P'); let esc=0, tot=0; const ds=Math.max(1.2,DX*0.5);
+  wells.filter(q=>q.type==='I'&&q.Q>0).forEach(q=>{
+    for(let r=0;r<12;r++){ const th=r/12*Math.PI*2; let x=q.x+2.5*Math.cos(th), y=q.y+2.5*Math.sin(th); const pts=[x,y]; let cls='stag';
+      for(let st=0;st<900;st++){ const v=velAt(x,y), sp=Math.hypot(v[0],v[1]); if(sp<1e-7) break;
+        const mx=x+v[0]/sp*ds*0.5, my=y+v[1]/sp*ds*0.5, v2=velAt(mx,my), sp2=Math.hypot(v2[0],v2[1]); if(sp2<1e-7) break;
+        x+=v2[0]/sp2*ds; y+=v2[1]/sp2*ds; pts.push(x,y);
+        if(x<DX||y<DY||x>LX-DX||y>LY-DY){cls='esc';break;}
+        let cap=false; for(const p of prod){ if(Math.hypot(p.x-x,p.y-y)<Math.max(2.6,DX*0.8)){cap=true;break;} } if(cap){cls='cap';break;} }
+      streams.push({pts:pts,cls:cls}); tot++; if(cls==='esc') esc++; } });
+  S.escFrac=tot?esc/tot:0; if(!S.restoring) S.escLeach=S.escFrac;
+}
+let sampleClock=0, acc=0;
+function reset(){
+  S.day=0; S.pv=0; S.inWater=S.prodWater=S.injMass=S.prodLix=S.reRE=S.reagent=S.lsOut=0; S.liquor=0; S.hist=[]; S.restoring=false; S.alarms=0; S.pv50=null; S.pv80=null; S.lossPeak=0; S.lossNow=0; S.stepCount=0;
+  genWells(); solveHead();
+  const molPerM3=(S.grade/100)*1900/0.330*2; let tot=0;
+  for(let c=0;c<N;c++){ Cl[c]=0; Cr[c]=0; const s=ore[c]?molPerM3*B*DX*DY:0; Sr[c]=s; Sr0[c]=s; tot+=s; }
+  S.totalSr0=Math.max(tot,1e-9); monitors.forEach(m=>{m.streak=0;m.alarm=false;m.val=0;});
+  if(disp) disp.fill(0); sampleClock=0; acc=0; rebuildBlock(); rebuildWellVisuals();
+}
+function step(dt){
+  const cInj=S.restoring?0:S.conc, KR=S.KR, fB=DY*B*dt, fB2=DX*B*dt;
+  for(let n=0;n<oreCells.length;n++){ const c=oreCells[n]; if(Sr[c]<=0||Cl[c]<=1) continue;
+    let r=KR*Sr[c]*(Cl[c]/(KH+Cl[c]))*dt; const cap=Cl[c]*V/1.5; if(r>Sr[c]) r=Sr[c]; if(r>cap) r=cap; Sr[c]-=r; Cr[c]+=r/V; Cl[c]-=1.5*r/V; }
+  dm.fill(0); dr.fill(0);
+  for(let j=1;j<NY-1;j++){ const jo=j*NX; for(let i=1;i<NX-1;i++){ const c=jo+i;
+    if(i<NX-2){ const F=fx[c]*fB; if(F>0){ const a=F*Cl[c], b=F*Cr[c]; dm[c]-=a; dm[c+1]+=a; dr[c]-=b; dr[c+1]+=b; } else { const a=F*Cl[c+1], b=F*Cr[c+1]; dm[c]-=a; dm[c+1]+=a; dr[c]-=b; dr[c+1]+=b; } }
+    if(j<NY-2){ const F=fy[c]*fB2; if(F>0){ const a=F*Cl[c], b=F*Cr[c]; dm[c]-=a; dm[c+NX]+=a; dr[c]-=b; dr[c+NX]+=b; } else { const a=F*Cl[c+NX], b=F*Cr[c+NX]; dm[c]-=a; dm[c+NX]+=a; dr[c]-=b; dr[c+NX]+=b; } } } }
+  /* 분산 (명시적, 면 중심차분) */
+  if(S.aL>0.5*DX||S.aT>0){ const gx=PHI*DY*B*dt/DX, gy=PHI*DX*B*dt/DY;
+    for(let j=1;j<NY-1;j++){ const jo=j*NX; for(let i=1;i<NX-1;i++){ const c=jo+i;
+      if(i<NX-2){ const Jl=Dfx[c]*(Cl[c+1]-Cl[c])*gx, Jr=Dfx[c]*(Cr[c+1]-Cr[c])*gx; dm[c]+=Jl; dm[c+1]-=Jl; dr[c]+=Jr; dr[c+1]-=Jr; }
+      if(j<NY-2){ const Jl=Dfy[c]*(Cl[c+NX]-Cl[c])*gy, Jr=Dfy[c]*(Cr[c+NX]-Cr[c])*gy; dm[c]+=Jl; dm[c+NX]-=Jl; dr[c]+=Jr; dr[c+NX]-=Jr; } } } }
+  for(let j=1;j<NY-1;j++){ let c=ID(1,j), F=-fx[ID(0,j)]*fB; if(F>0){ dm[c]-=F*Cl[c]; dr[c]-=F*Cr[c]; S.lsOut+=F*Cl[c]; }
+    c=ID(NX-2,j); F=fx[c]*fB; if(F>0){ dm[c]-=F*Cl[c]; dr[c]-=F*Cr[c]; S.lsOut+=F*Cl[c]; } }
+  for(let i=1;i<NX-1;i++){ let c=ID(i,1), F=-fy[ID(i,0)]*fB2; if(F>0){ dm[c]-=F*Cl[c]; dr[c]-=F*Cr[c]; S.lsOut+=F*Cl[c]; }
+    c=ID(i,NY-2); F=fy[c]*fB2; if(F>0){ dm[c]-=F*Cl[c]; dr[c]-=F*Cr[c]; S.lsOut+=F*Cl[c]; } }
+  let rw=0, rr=0;
+  if(!S.restoring) for(let n=0;n<injCells.length;n++){ const q=injCells[n], F=q.Q*dt; dm[q.c]+=F*cInj; S.inWater+=F; S.injMass+=F*cInj; S.reagent+=F*cInj*0.132/1000; }
+  for(let n=0;n<prodCells.length;n++){ const q=prodCells[n], c=q.c, F=q.Q*dt; dm[c]-=F*Cl[c]; dr[c]-=F*Cr[c]; rw+=F; rr+=F*Cr[c]; S.prodWater+=F; S.prodLix+=F*Cl[c]; }
+  for(let c=0;c<N;c++){ let a=Cl[c]+dm[c]/V; Cl[c]=a<0?0:a; let b=Cr[c]+dr[c]/V; Cr[c]=b<0?0:b; }
+  S.reRE+=rr; S.liquor= rw>1e-9?(rr/rw)*RE_MOLAR:S.liquor*0.95;
+  S.day+=dt; S.pv=S.prodWater/S.pvVol; if((++S.stepCount)%8===0) trackLoss();
+  const rf=S.reRE/S.totalSr0; if(S.pv50===null&&rf>=0.5) S.pv50=S.pv; if(S.pv80===null&&rf>=0.8) S.pv80=S.pv;
+  sampleClock+=dt; if(sampleClock>=2){ sampleClock=0; S.alarms=0;
+    for(let n=0;n<monitors.length;n++){ const m=monitors[n]; m.val=Cl[ID(m.i,m.j)]/Math.max(S.conc,1); if(m.val>UCL) m.streak++; else m.streak=0; m.alarm=m.streak>=2; if(m.alarm) S.alarms++; } }
+  if(!S.restoring&&S.pv>=S.PV_LEACH){ S.restoring=true; genWells(); solveHead(); rebuildWellVisuals(); }
+}
+function outsideOreMass(){ let m=0; for(let c=0;c<N;c++) if(!ore[c]) m+=Cl[c]; return m*V; }
+function lossPct(){ return S.injMass>0?(S.lsOut+outsideOreMass())/S.injMass*100:0; }
+function meanLiquor(){ return S.prodWater>0?S.reRE/S.prodWater*RE_MOLAR:0; }
+function trackLoss(){ S.lossNow=lossPct(); if(S.lossNow>S.lossPeak) S.lossPeak=S.lossNow; }
+
+/* ── 3D ── */
+let scene, camera, root, blockGroup, labelGroup, topCv, topCtx, topTex, streamLines, wellGroup, monMeshes=[], builtDomain=-1;
+let clipPlane, faceCv, faceCtx, faceTex, faceMesh; const HF=50, HPZ=15;   // 절개면 높이(m), 정수두 기준면 (대수층 상면 +15 m)
+const cam={a:-0.55,b:1.05,r:330};
+function build3D(){
+  scene=new THREE.Scene(); scene.background=new THREE.Color(0x0E1014);
+  camera=new THREE.PerspectiveCamera(42,1,1,1600);
+  root=new THREE.Group(); scene.add(root);
+  scene.add(new THREE.AmbientLight(0xffffff,0.6));
+  const dl=new THREE.DirectionalLight(0xfff3e0,0.85); dl.position.set(-120,220,140); scene.add(dl);
+  clipPlane=new THREE.Plane(new THREE.Vector3(0,0,-1),0);
+  topCv=document.createElement('canvas'); topCv.width=400; topCv.height=400; topCtx=topCv.getContext('2d'); topTex=new THREE.CanvasTexture(topCv);
+  faceCv=document.createElement('canvas'); faceCv.width=640; faceCv.height=112; faceCtx=faceCv.getContext('2d'); faceTex=new THREE.CanvasTexture(faceCv);
+  faceMesh=new THREE.Mesh(new THREE.PlaneBufferGeometry(10,10),new THREE.MeshBasicMaterial({map:faceTex,side:THREE.DoubleSide,transparent:true})); faceMesh.renderOrder=3; root.add(faceMesh);
+  blockGroup=new THREE.Group(); root.add(blockGroup);
+  wellGroup=new THREE.Group(); root.add(wellGroup);
+  labelGroup=new THREE.Group(); root.add(labelGroup);
+  streamLines=new THREE.LineSegments(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.9,clippingPlanes:[clipPlane]})); streamLines.renderOrder=2; root.add(streamLines);
+  disp=new Float32Array(N); rebuildBlock(); rebuildWellVisuals(); applyClip();
+}
+function applyClip(){ if(!clipPlane) return; clipPlane.constant=S.clip*LY-LY/2; faceMesh.position.z=S.clip*LY-0.05; faceMesh.visible=S.clip<0.99; }
+function rebuildBlock(){
+  if(!blockGroup||builtDomain===LX) return; builtDomain=LX;
+  while(blockGroup.children.length) blockGroup.remove(blockGroup.children[0]);
+  while(labelGroup.children.length) labelGroup.remove(labelGroup.children[0]);
+  root.position.set(-LX/2,-4,-LY/2);
+  const cp=[clipPlane];
+  const lower=new THREE.Mesh(new THREE.BoxBufferGeometry(LX,12,LY),new THREE.MeshLambertMaterial({color:0x3A414B,clippingPlanes:cp})); lower.position.set(LX/2,-6,LY/2); blockGroup.add(lower);
+  const side=new THREE.MeshLambertMaterial({color:0x8E7A55,clippingPlanes:cp});
+  const aq=new THREE.Mesh(new THREE.BoxBufferGeometry(LX,B,LY),[side,side,new THREE.MeshBasicMaterial({map:topTex,clippingPlanes:cp}),side,side,side]); aq.position.set(LX/2,B/2,LY/2); blockGroup.add(aq);
+  const capM=new THREE.MeshLambertMaterial({color:0x2F3540,clippingPlanes:cp}); const RW=Math.max(14,LX*0.07), RH=6;
+  [[LX/2,RW/2,LX,RW],[LX/2,LY-RW/2,LX,RW],[RW/2,LY/2,RW,LY-2*RW],[LX-RW/2,LY/2,RW,LY-2*RW]].forEach(p=>{ const m=new THREE.Mesh(new THREE.BoxBufferGeometry(p[2],RH,p[3]),capM); m.position.set(p[0],B+RH/2,p[1]); blockGroup.add(m); });
+  /* 절개면 크기 갱신 */
+  faceCv.height=Math.max(80,Math.round(640*HF/LX)); faceMesh.geometry.dispose(); faceMesh.geometry=new THREE.PlaneBufferGeometry(LX,HF); faceMesh.position.set(LX/2,-12+HF/2,0);
+  cam.r=LX*1.38; applyClip();
+}
+function coneHead(type,x,y,r){
+  const g=new THREE.ConeBufferGeometry(r,r*2.4,12), c=type==='I'?0x4FC3E8:0xE0A64A;
+  const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:c,emissive:new THREE.Color(c).multiplyScalar(0.35),clippingPlanes:[clipPlane]}));
+  if(type==='I') m.rotation.x=Math.PI;               // 주입정: 꼭짓점 아래(지중으로)
+  m.position.set(x,B+11,y); return m;
+}
+function rebuildWellVisuals(){
+  if(!wellGroup) return;
+  while(wellGroup.children.length) wellGroup.remove(wellGroup.children[0]); monMeshes=[];
+  const cp=[clipPlane], pts=[],col=[]; const cI=[0.31,0.76,0.91], cP=[0.88,0.65,0.29], cOff=[0.40,0.42,0.46];
+  const r=Math.max(2.0,LX*0.010); let firstI=null, firstP=null;
+  wells.forEach(q=>{ const c=q.type==='I'?(q.Q>0?cI:cOff):cP; pts.push(q.x,-2,q.y,q.x,B+11,q.y); col.push(c[0],c[1],c[2],c[0],c[1],c[2]);
+    const head=coneHead(q.type,q.x,q.y,r); if(q.type==='I'&&q.Q<=0) head.material.color.setRGB(0.40,0.42,0.46); wellGroup.add(head);
+    if(q.type==='I'&&!firstI) firstI=q; if(q.type==='P'&&!firstP) firstP=q; });
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  wellGroup.add(new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true,clippingPlanes:cp})));
+  monitors.forEach(m=>{ const mesh=new THREE.Mesh(new THREE.CylinderBufferGeometry(1.4,1.4,2.2,10),new THREE.MeshLambertMaterial({color:0x8B9099,clippingPlanes:cp})); mesh.position.set(m.x,B+7.5,m.y); wellGroup.add(mesh); monMeshes.push(mesh); });
+  const sp=[],sc=[]; const CC={cap:[0.30,0.80,0.90],esc:[0.92,0.35,0.30],stag:[0.45,0.47,0.52]};
+  streams.forEach(s=>{ const c=CC[s.cls]; for(let n=0;n+3<s.pts.length;n+=2){ sp.push(s.pts[n],B+0.5,s.pts[n+1],s.pts[n+2],B+0.5,s.pts[n+3]); sc.push(c[0],c[1],c[2],c[0],c[1],c[2]); } });
+  const sg=new THREE.BufferGeometry(); sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3)); sg.setAttribute('color',new THREE.Float32BufferAttribute(sc,3));
+  streamLines.geometry.dispose(); streamLines.geometry=sg;
+}
+/* 절개 종단면: 차수층 사이의 대수층, 수두면, 정호 스크린 */
+function drawSection(){
+  if(!faceCv||S.clip>=0.99) return;
+  const j=clamp(Math.round(S.clip*NY)-1,0,NY-1), W=faceCv.width, H=faceCv.height, ctx=faceCtx, key=MODES[S.mode].key;
+  const yOf=yw=>H-((yw+12)/HF)*H, cw=W/NX;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#3A414B'; ctx.fillRect(0,yOf(0),W,H-yOf(0));
+  for(let i=0;i<NX;i++){ const c=ID(i,j); ctx.fillStyle=ore[c]?'#8E7A55':'#7A6947'; ctx.fillRect(i*cw,yOf(B),cw+0.7,yOf(0)-yOf(B));
+    const v=disp[c]; if(v>0.012&&S.mode!==3){ const rg=ramp(key,v); ctx.fillStyle=rgbStr(rg[0],rg[1],rg[2],0.12+0.85*v); ctx.fillRect(i*cw,yOf(B),cw+0.7,yOf(0)-yOf(B)); } }
+  ctx.fillStyle='#2F3540'; ctx.fillRect(0,yOf(B+6),W,yOf(B)-yOf(B+6));
+  /* 수두면 (피압면): 대수층 상면 +15 m 기준 + 상대수두 */
+  ctx.strokeStyle='#5FD8F0'; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<NX;i++){ const Y=yOf(B+HPZ+h[ID(i,j)]), X=(i+0.5)*cw; i===0?ctx.moveTo(X,Y):ctx.lineTo(X,Y); } ctx.stroke();
+  ctx.strokeStyle='rgba(95,216,240,0.35)'; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(0,yOf(B+HPZ)); ctx.lineTo(W,yOf(B+HPZ)); ctx.stroke(); ctx.setLineDash([]);
+  /* 정호 (절개선 근처만) */
+  wells.forEach(q=>{ if(Math.abs(q.y-(j+0.5)*DY)>DY*0.9) return; const X=q.x/LX*W, col=q.type==='I'?(q.Q>0?'#4FC3E8':'#6E7480'):'#E0A64A';
+    ctx.strokeStyle=col; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(X,yOf(B+11)); ctx.lineTo(X,yOf(0)); ctx.stroke();
+    ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(X,yOf(B)); ctx.lineTo(X,yOf(0)); ctx.stroke();
+    ctx.fillStyle=col; ctx.beginPath(); const ay=yOf(B+9); if(q.type==='I'){ ctx.moveTo(X-5,ay-6); ctx.lineTo(X+5,ay-6); ctx.lineTo(X,ay+4); } else { ctx.moveTo(X-5,ay+4); ctx.lineTo(X+5,ay+4); ctx.lineTo(X,ay-6); } ctx.closePath(); ctx.fill(); });
+  monitors.forEach(m=>{ if(Math.abs(m.y-(j+0.5)*DY)>DY*0.9) return; const X=m.x/LX*W; ctx.strokeStyle=m.alarm?'#E2574C':'#8B9099'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(X,yOf(B+9)); ctx.lineTo(X,yOf(1)); ctx.stroke(); });
+  /* 라벨 */
+  faceTex.needsUpdate=true;
+}
+/* ── OGS 참조해 연동 ── */
+let REF=null;
+function loadReference(meta,buf){ if(meta.nx!==NX||meta.ny!==NY){ alert('격자 크기 불일치: 참조해 '+meta.nx+'×'+meta.ny+' vs 브라우저 '+NX+'×'+NY); return false; }
+  if(Math.abs(meta.domain_m-LX)>1e-6){ alert('도메인 크기 불일치: 참조해 '+meta.domain_m+' m vs 브라우저 '+LX.toFixed(1)+' m. 같은 시나리오로 다시 계산하십시오.'); return false; }
+  if(meta.mass_balance){ const r=meta.mass_balance.retained_over_injected, pc=meta.mass_balance.producer_c_max; const rl=r[r.length-1], pl=pc[pc.length-1];
+    if(rl>0.95||pl>1.2) alert('주의: 이 참조해는 물질수지가 의심스럽습니다.\n잔존/주입 = '+rl.toFixed(2)+' (파과 후 0.95 미만이어야 함), 회수정 최대 농도 = '+pl.toFixed(2)+' (1.2 이하여야 함).\n회수정이 용질을 빼지 않는 결함(FullUpwind 또는 보존형)일 수 있습니다. 불러오기는 진행합니다.'); }
+  else alert('참고: 이 참조해에는 물질수지 정보가 없습니다(구버전 run_case.py). 결과를 신뢰하기 전에 잔존/주입 비를 확인하십시오.');
+  REF={meta:meta,arr:new Float32Array(buf)}; S.useRef=true; return true; }
+function refFrame(day){ const t=REF.meta.times_days; let k=0; while(k<t.length-1&&t[k+1]<=day) k++; return k; }
+function refField(k,f){ const off=(k*2+f)*N; return REF.arr.subarray(off,off+N); }
+function refCompare(){ if(!REF) return null; const k=refFrame(S.day), hh=refField(k,0), cc=refField(k,1);
+  let se=0, n=0, sx=0, sy=0, sxx=0, syy=0, sxy=0;
+  for(let c=0;c<N;c++){ const d=h[c]-hh[c]; se+=d*d; n++; const x=Cl[c]/Math.max(S.conc,1), y=cc[c]; sx+=x; sy+=y; sxx+=x*x; syy+=y*y; sxy+=x*y; }
+  const r=(n*sxy-sx*sy)/Math.sqrt(Math.max((n*sxx-sx*sx)*(n*syy-sy*sy),1e-12));
+  return {frameDay:REF.meta.times_days[k], hRms:Math.sqrt(se/n), cR2:r*r, sweep:REF.meta.sweep_frac[k], outside:REF.meta.tracer_outside_ore_frac[k]}; }
+function exportScenario(){
+  const sc={schema_version:'0.1',mode:'pattern',
+    grid:{nx:NX,ny:NY,domain_m:+LX.toFixed(4),aquifer_thickness_m:B},
+    aquifer:{K_m_per_d:S.K,porosity:PHI,regional_gradient:S.grad,dispersivity_L_m:S.aL,dispersivity_T_m:S.aT,pore_diffusion_m2_s:1e-9},
+    wells:{pattern:S.pattern,spacing_m:S.spacing,n:S.n,outer_producers:S.outerProd,Q_inj_m3_per_d:S.qEff,bleed:S.bleed,
+      list:wells.map(q=>({x:+q.x.toFixed(3),y:+q.y.toFixed(3),type:q.type,Q_m3_per_d:q.type==='I'?S.qEff:+q.Q.toFixed(4)}))},
+    chemistry:{lixiviant_conc_mol_m3:S.conc,tracer_only:true},
+    schedule:{leach_pv:S.PV_LEACH,restore_pv:S.PV_END-S.PV_LEACH,pv_volume_m3:+S.pvVol.toFixed(1),dt_days:1.0},
+    monitoring:{ring_offset_m:S.ringDist,ucl_fraction:UCL},
+    provenance:{exported_from:'isl-studio pattern tab',date:new Date().toISOString().slice(0,10)}};
+  download('scenario.json',JSON.stringify(sc,null,1)); }
+function exportSnapshot(){ download('browser_snapshot_day'+Math.round(S.day)+'.json',JSON.stringify({day:S.day,nx:NX,ny:NY,DX:DX,domain_m:LX,conc:S.conc,h:Array.from(h),Cl:Array.from(Cl)})); }
+function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
+
+const MODES=[{key:'lix',label:'침출액',lo:'없음',hi:'주입 농도',title:'침출액 (추적자)'},
+             {key:'liquor',label:'모액',lo:'0 g/L',hi:'약 3 g/L',title:'모액 (용액 중 회수 대상)'},
+             {key:'prog',label:'침출 진행도',lo:'미침출',hi:'완전 침출',title:'침출 진행도 (sweep)'},
+             {key:'head',label:'수두',lo:'낮음',hi:'높음',title:'수두 (압력면)'}];
+function fieldValue(c,m){ if(m===0) return Math.sqrt(Math.min(1,Cl[c]/Math.max(S.conc,1))); if(m===1) return Math.sqrt(Math.min(1,Cr[c]*RE_MOLAR/3.0));
+  if(m===2) return Sr0[c]>0?1-Sr[c]/Sr0[c]:0; return (h[c]-S.hMin)/Math.max(S.hMax-S.hMin,1e-9); }
+function tick(){
+  const key=MODES[S.mode].key;
+  if(S.useRef&&REF){ const k=refFrame(S.day), hh=refField(k,0), cc=refField(k,1); let mn=1e9,mx=-1e9; for(let c=0;c<N;c++){ if(hh[c]<mn) mn=hh[c]; if(hh[c]>mx) mx=hh[c]; }
+    for(let c=0;c<N;c++){ const t=(S.mode===3)?(hh[c]-mn)/Math.max(mx-mn,1e-9):Math.sqrt(clamp(cc[c],0,1)); disp[c]+=(t-disp[c])*0.2; }
+    S.refStats=refCompare(); }
+  else { for(let c=0;c<N;c++){ const t=clamp(fieldValue(c,S.mode),0,1); disp[c]+=(t-disp[c])*0.2; } S.refStats=REF?refCompare():null; }
+  const ctx=topCtx, W=topCv.width, H=topCv.height, cw=W/NX, ch=H/NY;
+  ctx.fillStyle='#7A6947'; ctx.fillRect(0,0,W,H);
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const c=ID(i,j), v=disp[c]; if(ore[c]){ ctx.fillStyle='#8E7A55'; ctx.fillRect(i*cw,H-(j+1)*ch,cw+0.6,ch+0.6); }
+    if(v>0.012||S.mode===3){ const rg=ramp(key,v); ctx.fillStyle=rgbStr(rg[0],rg[1],rg[2],S.mode===3?0.75:(0.10+0.85*v)); ctx.fillRect(i*cw,H-(j+1)*ch,cw+0.6,ch+0.6); } }
+  if(S.mode===3){ ctx.strokeStyle='rgba(20,22,28,0.55)'; ctx.lineWidth=1; const lv=14, rng=Math.max(S.hMax-S.hMin,1e-9);
+    for(let j=0;j<NY-1;j++)for(let i=0;i<NX-1;i++){ const a=(h[ID(i,j)]-S.hMin)/rng*lv, b=(h[ID(i+1,j)]-S.hMin)/rng*lv, c2=(h[ID(i,j+1)]-S.hMin)/rng*lv;
+      if(Math.floor(a)!==Math.floor(b)){ ctx.beginPath(); ctx.moveTo((i+1)*cw,H-j*ch); ctx.lineTo((i+1)*cw,H-(j+1)*ch); ctx.stroke(); }
+      if(Math.floor(a)!==Math.floor(c2)){ ctx.beginPath(); ctx.moveTo(i*cw,H-(j+1)*ch); ctx.lineTo((i+1)*cw,H-(j+1)*ch); ctx.stroke(); } } }
+  ctx.strokeStyle='rgba(240,214,150,0.55)'; ctx.lineWidth=1.2; ctx.strokeRect(bounds.x0/LX*W,H-bounds.y1/LY*H,(bounds.x1-bounds.x0)/LX*W,(bounds.y1-bounds.y0)/LY*H);
+  const rd=S.ringDist; ctx.strokeStyle='rgba(200,205,215,0.55)'; ctx.setLineDash([6,5]); ctx.strokeRect((bounds.x0-rd)/LX*W,H-(bounds.y1+rd)/LY*H,(bounds.x1-bounds.x0+2*rd)/LX*W,(bounds.y1-bounds.y0+2*rd)/LY*H); ctx.setLineDash([]);
+  topTex.needsUpdate=true;
+  monitors.forEach((m,n)=>{ if(monMeshes[n]) monMeshes[n].material.color.setHex(m.alarm?0xE2574C:0x8B9099); });
+}
+function advance(nSub){ for(let n=0;n<nSub;n++){ if(S.pv>=S.PV_END) break; step(S.dtSub); acc+=S.dtSub;
+  if(acc>=2.0){ acc=0; S.hist.push({pv:S.pv,d:S.day,rf:S.reRE/S.totalSr0*100,ls:S.lossNow,cc:S.liquor,al:S.alarms}); } } }
+function rebuild(){ const p=S.restoring; S.restoring=false; genWells(); if(p){ S.restoring=true; genWells(); } solveHead(); rebuildWellVisuals(); if(api.onLegend) api.onLegend(); }
+function buildControls(rootEl){
+  rootEl.innerHTML='';
+  let sec=uiSection(rootEl,'정호 배치','간격이 1급 변수입니다. Honeymoon(2026)은 좁은 패턴을 버리고 50~60 m 광역 간격을 시험 중입니다.');
+  uiSegment(sec,{val:'5spot',options:[{v:'5spot',label:'5-spot'},{v:'7spot',label:'7-spot'},{v:'line',label:'Line drive'}],set:v=>{S.pattern=v; reset();}});
+  uiSlider(sec,{label:'정호 간격',min:20,max:80,val:50,step:5,fmt:v=>v+' m',set:v=>{S.spacing=v; reset();},src:'SME 19장 15~60 m · Honeymoon 50~60 m',srcTitle:'SME Mining Reference Handbook Ch.19: 15.2~61 m. Boss Energy Honeymoon EKT1 60 m, EKT2 50 m (2026)'});
+  uiSlider(sec,{label:'패턴 규모',min:1,max:3,val:2,fmt:v=>v+'×'+v,set:v=>{S.n=v; reset();}});
+  uiToggle(sec,{label:'외곽 정호 = 회수정',desc:'켜면 회수정이 바깥을 둘러쌈(Florence 방식, 주입 4 : 회수 9). 끄면 주입정이 바깥에 옵니다',checked:true,set:v=>{S.outerProd=v; reset();}});
+  sec=uiSection(rootEl,'운전 조건','회수량을 주입량보다 몇 % 많게(bleed) 유지하면 안쪽으로 동수경사가 생겨 침출액이 갇힙니다. 음수로 내리면 주입이 양수를 초과해 밖으로 밀려납니다.');
+  uiSlider(sec,{label:'주입량 / 정호',min:30,max:300,val:100,step:10,fmt:v=>v+' m³/d',set:v=>{S.Qinj=v; rebuild();}});
+  uiSlider(sec,{label:'Bleed (양수 − 주입)',min:-15,max:15,val:5,fmt:v=>(v>0?'+':'')+v+' %',set:v=>{S.bleed=v/100; rebuild();},src:'IAEA NF-T-1.4 · 수 %',srcTitle:'IAEA Nuclear Energy Series NF-T-1.4 (2016): 유실 최소화를 위해 침출액 순환에서 수 % 수준의 bleed 적용'});
+  uiSlider(sec,{label:'침출제 농도',min:5,max:50,val:25,fmt:v=>(v/100).toFixed(2)+' mol/L',set:v=>{S.conc=v*10}});
+  uiSlider(sec,{label:'교환성 품위',min:10,max:110,val:50,fmt:v=>(v/1000).toFixed(3)+' wt%',set:v=>{S.grade=v/1000; reset();}});
+  sec=uiSection(rootEl,'대수층','IAEA 경험칙: 투수계수 1 m/d 이상 유리, 0.1 m/d 이하 불가.');
+  const kSl=uiSlider(sec,{label:'투수계수',min:-130,max:70,val:0,fmt:v=>Math.pow(10,v/100).toFixed(2)+' m/d',set:v=>{S.K=Math.pow(10,v/100); rebuild();},src:'IAEA NF-T-1.4 경험칙',srcTitle:'1 m/d 이상 유리, 0.1 m/d 정도 이하에서 ISL 불가'});
+  uiSlider(sec,{label:'지역 동수경사',min:0,max:20,val:2,fmt:v=>(v/1000).toFixed(3),set:v=>{S.grad=v/1000; rebuild();}});
+  uiSlider(sec,{label:'종분산도 αL (목표)',min:0,max:50,val:20,fmt:v=>(v/10).toFixed(1)+' m',set:v=>{S.aL=v/10; rebuild();},src:'유효 = 목표 − Δx/2 · OGS와 같은 값',srcTitle:'브라우저는 풍상차분 수치분산(≈Δx/2, 이 격자에서 약 1.8 m)을 이미 갖고 있어 목표에서 그만큼 뺀 물리 분산만 더한다. 내보내는 scenario.json 에는 목표값이 실린다. 참조해 기본 αL 2 m, αT 0.2 m'});
+  uiSlider(sec,{label:'횡분산도 αT',min:0,max:10,val:2,fmt:v=>(v/10).toFixed(1)+' m',set:v=>{S.aT=v/10; rebuild();}});
+  const og=uiSection(rootEl,'OGS 참조해 연동','시나리오를 내보내 OGS로 계산하고, 결과(results.json + fields.bin)를 불러와 같은 화면에 겹칩니다.');
+  const bar=document.createElement('div'); bar.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px';
+  const mk=(t,f)=>{ const b=document.createElement('button'); b.textContent=t; b.style.cssText='border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:6px 10px;font-size:11.5px;border-radius:3px;cursor:pointer;font-family:inherit'; b.addEventListener('click',f); bar.appendChild(b); };
+  mk('scenario.json 내보내기',exportScenario); mk('브라우저 스냅샷 내보내기',exportSnapshot); og.appendChild(bar);
+  const fi=document.createElement('input'); fi.type='file'; fi.multiple=true; fi.accept='.json,.bin'; fi.style.cssText='font-size:11px;color:var(--ink3);width:100%;margin-bottom:8px'; og.appendChild(fi);
+  const refTog=uiToggle(og,{label:'OGS 참조해 표시',desc:'켜면 침출액·수두 모드가 OGS 결과를 그립니다. 브라우저 계산은 그대로 진행되어 상세 지표에서 두 값을 비교합니다.',set:v=>{ if(v&&!REF){ alert('먼저 results.json과 fields.bin을 선택하십시오.'); refTog.checked=false; return; } S.useRef=v; }});
+  fi.addEventListener('change',async()=>{ let meta=null, buf=null; for(const f of fi.files){ if(f.name.endsWith('.json')) meta=JSON.parse(await f.text()); else if(f.name.endsWith('.bin')) buf=await f.arrayBuffer(); }
+    if(meta&&buf){ if(loadReference(meta,buf)){ refTog.checked=true; } } else alert('results.json과 fields.bin 두 파일을 함께 선택하십시오.'); });
+  uiToggle(sec,{label:'이온흡착형 풍화토 가정',hyp:true,desc:'투수계수를 전풍화층 값 0.16 m/d(Wang 2022)로. Yuan 2025는 2.59 m/d로 한 자릿수 차이. 사면형 광상은 불포화·비폐색이라 본래 패턴식 대상이 아님',set:v=>{S.iac=v; kSl.value=v?-80:0; kSl.dispatchEvent(new Event('input'));}});
+}
+function legendHTML(){
+  const m=MODES[S.mode], nI=wells.filter(q=>q.type==='I').length, nP=wells.length-nI;
+  const it=(ic,nm,role)=>ic+'<div class="nm">'+nm+(role?'<span class="role">'+role+'</span>':'')+'</div>';
+  const sw=c=>'<i style="background:'+c+'"></i>', ln=c=>'<i class="ln" style="background:'+c+'"></i>';
+  const faces=[ it(sw('#8E7A55'),'대수층 상면','광체 · 두께 8 m · 평면도에 표시 항목이 겹침'),
+    it(sw('#2F3540'),'상부 차수층','불투수 · 안쪽은 걷어내고 테두리만'),
+    it(sw('#3A414B'),'하부 차수층','불투수'),
+    it(sw('#7A6947'),'광체 밖 대수층','품위 0 · 실선 사각형 바깥') ];
+  const lines=[ it('<i class="tri" style="border-top:10px solid #4FC3E8"></i>','주입정 ▼ '+nI+'공','꼭짓점이 땅을 향한 원뿔 · 침출액 주입'),
+    it('<i class="tri" style="border-bottom:10px solid #E0A64A"></i>','회수정 ▲ '+nP+'공','꼭짓점이 위를 향한 원뿔 · 모액 양수'),
+    it('<i class="dot" style="background:#8B9099"></i>','감시정 12공','회색 원기둥 · 2회 연속 초과 시 적색'),
+    it(ln('#4DCCE6'),'유선 · 포집','주입정에서 출발해 회수정에 도달'),
+    it(ln('#EB5A4D'),'유선 · 이탈','경계 밖으로 나감 = 봉쇄 실패'),
+    it(ln('#74787F'),'유선 · 정체','속도 0 근처에서 멈춤'),
+    it(ln('#F0D696'),'실선 사각형','광체 범위 · 회수율 분모'),
+    it('<i class="dsh" style="border-top-color:#C8CDD7"></i>','점선 사각형','감시정 링'),
+    it(ln('#5FD8F0'),'수두면','절개면 위 실선 · 주입정에서 솟고 회수정에서 꺼짐') ];
+  return '<div class="hd">표시 항목 — '+m.title+'</div><div class="bar2" style="background:'+gradientCSS(m.key)+'"></div><div class="barlbl"><span>'+m.lo+'</span><span>'+m.hi+'</span></div>'+
+    '<div class="hd">면 (색)</div><div class="grp">'+faces.join('')+'</div>'+
+    '<div class="hd">선 · 표식</div><div class="grp">'+lines.join('')+'</div>';
+}
+function ui(){
+  const rf=S.reRE/S.totalSr0*100, ls=S.lossNow, nI=wells.filter(q=>q.type==='I').length, nP=wells.length-nI;
+  let ph,cap;
+  if(S.day<=0){ ph='주입 전'; cap='재생을 누르면 주입정에서 침출액이 들어가고 회수정이 양수합니다. 유선 색을 먼저 보십시오. 적색 유선이 있으면 봉쇄가 안 된 배치입니다.'; }
+  else if(!S.restoring){ ph='침출 단계 · PV '+S.pv.toFixed(2); cap = S.escFrac>0.02 ? '유선의 '+(S.escFrac*100).toFixed(0)+'%가 회수정에 잡히지 않고 밖으로 나갑니다. 외곽을 회수정으로 바꾸거나 bleed를 올려보십시오.'
+    : (S.alarms>0 ? '감시정 '+S.alarms+'공에서 추적자가 관리치를 넘었습니다.' : '포집 영역이 닫혀 있습니다. 정체 구역(꽃잎 모양)은 침출 진행도 모드에서 보입니다.'); }
+  else { ph='복원 · 지하수 스윕 · PV '+S.pv.toFixed(2); cap='주입을 멈추고 양수만 합니다. 남은 침출액을 되끌어오는 구간이며 실제 조업에서는 회수보다 오래 걸립니다.'; }
+  const warn=[]; if(S.alarms>0) warn.push('감시정 '+S.alarms+'/12 초과. 규정상 지시항목 2개 동시 초과가 excursion 기준이며 여기서는 추적자 1개로 대체.'); if(S.escFrac>0.02) warn.push('유선 '+(S.escFrac*100).toFixed(0)+'%가 도메인 밖으로 이탈합니다.'); if(S.qEff<S.Qinj-0.5) warn.push('투수계수 '+S.K.toFixed(2)+' m/d에서 허용 수위강하(15 m) 안에 넣을 수 있는 주입량이 정호당 '+S.qEff.toFixed(0)+' m³/d로 제한됩니다. 1 PV에 '+S.pvDays.toFixed(0)+'일.');
+  if(S.useRef&&REF) ph='[OGS 참조해 표시 중] '+ph;
+  return { day:S.pv.toFixed(2), dayUnit:'PV', progress:Math.min(S.pv,S.PV_END)/S.PV_END, phase:ph, caption:cap, warn:warn,
+    kpis:[{l:'회수율',v:rf.toFixed(1),u:'%'},{l:'유실률',v:ls.toFixed(1),u:'% 광체 밖 침출액'},{l:'감시정 초과',v:S.alarms+'/12',u:'2회 연속 UCL 초과',color:S.alarms>0?'var(--alert)':'var(--safe)'}],
+    chart:{xmax:S.PV_END,marks:[{x:S.PV_LEACH,label:'침출'},{x:S.PV_END-0.1,label:'복원'}],series:[{name:'회수율',color:'#E0B33C',pts:S.hist.map(x=>[x.pv,x.rf/100])},{name:'유실률',color:'#E2574C',pts:S.hist.map(x=>[x.pv,x.ls/100])},{name:'모액 g/L (0–3)',color:'#4FC3E8',pts:S.hist.map(x=>[x.pv,x.cc/3])}]},
+    chartHint:'가로축은 누적 양수 공극체적(PV). 1 PV ≈ '+S.pvDays.toFixed(0)+'일.',
+    details:(S.refStats?[['OGS 참조해 프레임',S.refStats.frameDay.toFixed(0),'일'],['수두 RMS 차 (브라우저−OGS)',S.refStats.hRms.toFixed(2),'m'],['추적자 R² (브라우저 vs OGS)',S.refStats.cR2.toFixed(3),''],['OGS sweep 접촉율',(S.refStats.sweep*100).toFixed(0),'%'],['OGS 광체 밖 추적자',(S.refStats.outside*100).toFixed(1),'%']]:[]).concat([['경과 일수',S.day.toFixed(0),'일'],['1 PV 소요',S.pvDays.toFixed(0),'일'],['정호당 주입 (K 제한)',S.qEff.toFixed(0)+' / 허용 '+Math.min(S.qMax,9999).toFixed(0),'m³/d'],['정호 수 (주입/회수)',nI+' / '+nP,'공'],['도메인 한 변',LX.toFixed(0),'m'],['모액 농도 (현재/평균)',S.liquor.toFixed(2)+' / '+meanLiquor().toFixed(2),'g/L'],['50% 회수 도달',S.pv50===null?'—':S.pv50.toFixed(2),'PV'],['80% 회수 도달',S.pv80===null?'—':S.pv80.toFixed(2),'PV'],['누적 주입',S.inWater.toFixed(0),'m³'],['누적 양수',S.prodWater.toFixed(0),'m³'],['시약 순환 총량 (재사용 미고려)',S.reagent.toFixed(1),'t'],['유실률 최대 (침출 중)',S.lossPeak.toFixed(1),'%'],['이탈 유선 비율 (침출 중)',(S.escLeach*100).toFixed(0),'%'],['경계 유출 추적자',(S.injMass>0?S.lsOut/S.injMass*100:0).toFixed(1),'%']]),
+    limits:['<b>흐름</b> · 2차원 평면 정류 피압류(Laplace). 연직 sweep·층상 불균질 없음. 수두는 정호 조건이 바뀔 때만 다시 풂.',
+      '<b>분산</b> · 종·횡 분산도(αL, αT)를 면 속도 기반 대각 텐서로 넣음. 교차항(Dxy) 생략. αL 은 목표값에서 격자 수치분산(Δx/2)을 뺀 유효값으로 적용. 명시적 스킴이라 분산이 크면 부분스텝이 짧아짐.',
+      '<b>화학</b> · 사면식과 같은 1차 속도식. 우라늄 침출 화학(산화·탄산염)이 아니라 이온교환 형태를 그대로 씀.',
+      '<b>excursion</b> · 규정은 지시항목(Cl⁻·전기전도도·총알칼리도) 2개 동시 초과. 여기서는 추적자 1개의 2회 연속 초과로 대체.',
+      '<b>OGS 참조해 대비</b> · 분산항 도입 후 수치는 COMPARE.md 부록 A 참조. 12 시나리오에서 sweep·광체 밖 유실이 참조해와 수 %p 이내.',
+      '<b>폐색</b> · 석고·철수산화물 침전, 점토 팽윤에 의한 투수계수 저하 없음.',
+      '<b>이온흡착형 가정</b> · 가설입니다. 사면형 광상은 불포화·비폐색이라 패턴식 대상이 아니며, 포화대에 놓인 평탄 광상 사례를 아직 확보하지 못했습니다.',
+      '<b>복원</b> · 지하수 스윕만. 역삼투 재주입·환원 재순환 없음. 실제(Highland WY)는 15 PV 이상.'],
+    tlLabel:'0 – '+S.PV_END+' PV', tlTicks:[0,1,2,3,4,5,6,7], tlPhase1:S.PV_LEACH/S.PV_END, done:S.pv>=S.PV_END };
+}
+function batch(opts){ Object.assign(S,opts||{}); reset(); let guard=0; while(S.pv<S.PV_END&&guard<400000){ step(S.dtSub); guard++; }
+  trackLoss(); return {recov:S.reRE/S.totalSr0*100, loss:S.lossNow, lossPeak:S.lossPeak, water:S.inWater, reagent:S.reagent, days:S.day, wells:wells.length, alarms:S.alarms, liquor:meanLiquor(), escFrac:S.escLeach, qEff:S.qEff, pv50:S.pv50, pv80:S.pv80, pvDays:S.pvDays, area:(bounds.x1-bounds.x0)*(bounds.y1-bounds.y0)};
+}
+const api={ name:'정호 패턴식', S, MODES, cam, _dbg:()=>({h,Cl,wells,NX,NY,DX,LX}), loadReference, exportScenario, buildGeology:()=>{}, reset, advance, tick, drawSection, buildControls, legendHTML, ui, batch, applyClip,
+  get scene(){return scene}, get camera(){return camera}, build3D, hasClip:true, onLegend:null, setMode:m=>{S.mode=m}, setClip:v=>{S.clip=v; applyClip();} };
+return api;
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   셸 — 탭, 렌더러, 타임라인, KPI, 비교
+   ═══════════════════════════════════════════════════════════ */
+const SIMS={slope:Slope, pattern:Pattern};
+let active=Slope, activeKey='slope', playing=false, speed=1, frame=0, t0=performance.now();
+
+const stage=$('stage');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.localClippingEnabled=true;
+stage.appendChild(renderer.domElement);
+
+Slope.buildGeology(); Slope.build3D(); Pattern.build3D();
+Slope.reset(); Pattern.reset();
+Slope.buildControls($('ctl-slope')); Pattern.buildControls($('ctl-pattern'));
+const orbits={ slope:makeOrbit(Slope.camera,renderer.domElement,Slope.cam), pattern:makeOrbit(Pattern.camera,renderer.domElement,Pattern.cam) };
+orbits.slope.setActive(()=>activeKey==='slope'); orbits.pattern.setActive(()=>activeKey==='pattern');
+Slope.onLegend=()=>{ if(activeKey==='slope') $('legend').innerHTML=Slope.legendHTML(); };
+Pattern.onLegend=()=>{ if(activeKey==='pattern') $('legend').innerHTML=Pattern.legendHTML(); };
+
+function resize(){ const r=stage.getBoundingClientRect(); if(r.width<10) return; renderer.setSize(r.width,r.height);
+  Object.values(SIMS).forEach(s=>{ s.camera.aspect=r.width/Math.max(r.height,1); s.camera.updateProjectionMatrix(); }); }
+addEventListener('resize',resize);
+
+function buildModes(){ const m=$('modes'); m.innerHTML='';
+  active.MODES.forEach((md,i)=>{ const b=document.createElement('button'); b.textContent=md.label; if(i===active.S.mode) b.classList.add('on');
+    b.addEventListener('click',()=>{ m.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); active.setMode(i); $('legend').innerHTML=active.legendHTML(); }); m.appendChild(b); }); }
+function buildTimeline(u){ const t=$('track'); t.querySelectorAll('.tick').forEach(x=>x.remove());
+  t.querySelector('.ph1').style.left='0%'; t.querySelector('.ph1').style.width=(u.tlPhase1*100)+'%';
+  const xmax=u.tlTicks[u.tlTicks.length-1];
+  u.tlTicks.forEach(d=>{ const e=document.createElement('div'); e.className='tick'; e.style.left=(d/xmax*100)+'%'; e.innerHTML=d+(u.dayUnit==='PV'?'':'d')+'<b></b>'; t.appendChild(e); });
+  $('tl-label').textContent=u.tlLabel; }
+
+function refreshUI(){
+  const u=active.ui();
+  $('dayv').textContent=u.day; $('dayu').textContent=u.dayUnit; $('phase').textContent=u.phase; $('cap2').textContent=u.caption;
+  u.kpis.forEach((k,i)=>{ const n=i+1; $('k'+n+'l').textContent=k.l; $('k'+n+'v').textContent=k.v; $('k'+n+'u').textContent=k.u; $('k'+n+'v').style.color=k.color||'var(--ink)'; });
+  const W=$('warn'); W.className=u.warn.length?'on':''; W.innerHTML=u.warn.join('<br>');
+  drawChart($('chart'),u.chart); $('chart-hint').textContent=u.chartHint;
+  $('details').innerHTML=u.details.map(d=>'<div class="kpi"><span class="k">'+d[0]+'</span><span><span class="v num">'+d[1]+'</span><span class="u">'+d[2]+'</span></span></div>').join('');
+  $('track').querySelector('.fill').style.width=(u.progress*100)+'%';
+  if(u.done&&playing){ playing=false; $('play').textContent='재생'; }
+  return u;
+}
+function activate(key){
+  playing=false; $('play').textContent='재생';
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===key));
+  const cmp=key==='compare';
+  $('compare').hidden=!cmp; $('left').hidden=cmp; $('stage').hidden=cmp; $('right').hidden=cmp; $('timeline').style.visibility=cmp?'hidden':'visible';
+  if(cmp){ activeKey='compare'; renderCompare(); return; }
+  activeKey=key; active=SIMS[key];
+  $('ctl-slope').hidden=key!=='slope'; $('ctl-pattern').hidden=key!=='pattern'; $('clipwrap').hidden=!active.hasClip; $('s-clip').value=Math.round(active.S.clip*100);
+  buildModes(); $('legend').innerHTML=active.legendHTML(); if(orbits[key]) orbits[key].place();
+  const u=refreshUI(); buildTimeline(u);
+  $('limits').innerHTML=u.limits.map(l=>'<li>'+l+'</li>').join('');
+  resize();
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>activate(b.dataset.tab)));
+$('play').addEventListener('click',()=>{ const u=active.ui(); if(u.done) active.reset(); playing=!playing; $('play').textContent=playing?'일시정지':'재생'; });
+$('reset').addEventListener('click',()=>{ playing=false; $('play').textContent='재생'; active.reset(); refreshUI(); });
+document.querySelectorAll('#speed button').forEach(b=>b.addEventListener('click',()=>{ document.querySelectorAll('#speed button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); speed=+b.dataset.s; }));
+$('s-clip').addEventListener('input',e=>active.setClip(+e.target.value/100));
+
+/* ── 비교 탭 ── */
+let cmpRes={slope:null,pattern:null};
+function fmtN(v,d){ return (v===null||v===undefined||isNaN(v))?'—':(+v).toFixed(d===undefined?1:d); }
+function renderCompare(){
+  const a=cmpRes.slope, b=cmpRes.pattern;
+  const row=(lbl,va,vb,note,hl)=>'<tr'+(hl?' class="hl"':'')+'><td class="lbl">'+lbl+'</td><td class="v num">'+va+'</td><td class="v num">'+vb+'</td><td style="color:var(--ink3);font-size:11.5px">'+(note||'')+'</td></tr>';
+  let rows;
+  if(!a||!b){ rows=row('—','미계산','미계산','아래 버튼으로 두 방식을 현재 설정 그대로 끝까지 돌립니다.'); }
+  else rows=[
+    row('회수율 (교환성 분율 기준)',fmtN(a.recov)+' %',fmtN(b.recov)+' %','사면식은 120일, 패턴식은 7 PV 시점. 시간축이 다릅니다.'),
+    row('유실 (침출 중 최대 → 종료)',fmtN(a.loss)+' % (누적)',fmtN(b.lossPeak)+' → '+fmtN(b.loss)+' %','사면식은 되돌릴 수 없는 유출, 패턴식은 복원 양수로 되끌어온 값.',true),
+    row('수리학적 봉쇄','불가능 (구조적)',b.escFrac>0.02?'미달 · 유선 '+fmtN(b.escFrac*100,0)+'% 이탈':'유지','패턴식은 외곽 회수정 + bleed로 닫힌 포집 영역을 만들 수 있음.',true),
+    row('감시·안전 지표','최소 안전율 '+fmtN(a.fs,2),'감시정 초과 '+b.alarms+' / 12','다른 종류의 위험: 사면은 산사태, 패턴은 지하수 유출.'),
+    row('정호·주입공 수',a.wells+' 공 (주입공)',b.wells+' 공 (주입+회수)','패턴식은 회수정·감시정·펌프가 추가로 필요.'),
+    row('물 주입량',fmtN(a.water,0)+' m³',fmtN(b.water,0)+' m³','패턴식은 순환수라 대부분 재사용. 사면식은 일방 주입.'),
+    row('시약 (황산암모늄 환산)',fmtN(a.reagent,1)+' t (소비)',fmtN(b.reagent,1)+' t (순환 총량)','패턴식은 회수액을 재보충해 순환하므로 실제 소비는 이 값의 일부입니다. 모델은 매번 신액 주입으로 계산.'),
+    row('소요 기간',fmtN(a.days,0)+' 일',fmtN(b.days,0)+' 일 (1 PV ≈ '+fmtN(b.pvDays,0)+'일)','패턴식은 복원 2 PV 포함.'),
+    row('모액 농도 (평균)',fmtN(a.liquor,2)+' g/L (종료 시)',fmtN(b.liquor,2)+' g/L','현장 실적 0.3~2.0 g/L 범위 확인용.'),
+    row('대상 면적',fmtN(a.area,0)+' m²',fmtN(b.area,0)+' m²','규모가 다르므로 절대값보다 비율을 보십시오.')
+  ].join('');
+  let take='';
+  if(a&&b){
+    const cont=b.escFrac<=0.02&&b.alarms===0;
+    take='<b>봉쇄</b> — 사면식은 배리어를 다 켜도 닫힌 포집 영역을 만들 수 없고, 유출은 자연 차수층의 연속성에 달려 있습니다. 패턴식은 현재 설정에서 '+(cont?'포집 영역이 닫혀 있습니다.':'포집 영역이 열려 있습니다. 외곽을 회수정으로 두고 bleed를 양수로 올리십시오.')+
+      '<br><b>대가</b> — 그 봉쇄는 정호 '+b.wells+'공과 상시 양수, 감시정 12공, 그리고 회수 뒤 복원 양수로 얻습니다. 사면식은 주입공 '+a.wells+'공과 도랑 하나입니다.'+
+      '<br><b>지질 조건</b> — 패턴식은 포화·피압·투수성 대수층이 전제입니다. 이온흡착형 풍화토(가설, K≈0.16 m/d)에 적용하면 정호당 주입량이 허용 수위강하 안에서 약 19 m³/d로 제한되어 1 PV에 약 700일이 걸립니다. 같은 기간을 맞추려면 정호를 5배 촘촘히 박아야 합니다.'+
+      '<br><b>한 문장</b> — 환경 차이는 시약이 아니라 수리지질에서 옵니다.';
+  }
+  $('compare').innerHTML='<h2>두 방식 비교</h2><p class="lead">사면 중력식은 불포화 사면에 위에서 아래로 한 번 흘려 넣는 방식이고, 정호 패턴식은 포화 피압대수층에서 주입정과 회수정으로 순환시키는 방식입니다. 각 탭에서 조정한 설정 그대로 두 모델을 끝까지 돌려 나란히 놓습니다.</p>'+
+    '<button class="btn" id="cmp-run">현재 설정으로 두 방식 계산</button> <span id="cmp-msg" style="color:var(--ink3);font-size:12px;margin-left:10px"></span>'+
+    '<table style="margin-top:18px"><thead><tr><th>지표</th><th style="text-align:right">사면 중력식</th><th style="text-align:right">정호 패턴식</th><th>비고</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    (take?'<div class="take">'+take+'</div>':'')+
+    '<div class="cols"><div><h4>사면 중력식이 구조적으로 안 되는 이유</h4><p>광체가 불포화대 사면에 있어 압력으로 흐름을 제어할 수 없습니다. 주입만 있고 양수가 없으니 동수경사를 안쪽으로 걸 방법이 없고, 회수는 사면 하단 집액구가 중력으로 받는 만큼입니다. IAEA가 ISL 성립 조건으로 드는 포화·피압·폐색 중 어느 것도 만족하지 않습니다.</p></div>'+
+    '<div><h4>정호 패턴식이 되는 조건과 비용</h4><p>포화 피압대수층, 투수계수 1 m/d 안팎, 상·하부 차수층. 회수정을 바깥에 두고 양수량을 주입량보다 수 % 많게 유지하면 포집 영역이 닫힙니다(Florence Copper PTF: 주입 4 · 회수 9). 감시정 링에서 지시항목 2개가 동시에 관리치를 넘으면 excursion으로 판정하고, 조업 후 복원에 15 PV 이상 걸린 사례(Highland, WY)가 있습니다.</p></div></div>';
+  const btn=$('cmp-run'); if(btn) btn.addEventListener('click',()=>{ $('cmp-msg').textContent='계산 중… (수 초)'; btn.disabled=true;
+    setTimeout(()=>{ const sa={...Slope.S}, sb={...Pattern.S};
+      cmpRes.slope=Slope.batch({}); cmpRes.pattern=Pattern.batch({});
+      Slope.reset(); Pattern.reset(); renderCompare(); },30); });
+}
+
+/* ── 루프 ── */
+function loop(){
+  requestAnimationFrame(loop);
+  if(activeKey==='compare') return;
+  const tt=(performance.now()-t0)/1000;
+  if(playing) active.advance(speed);
+  frame++; active.tick(tt);
+  if(frame%3===0){ active.drawSection(); refreshUI(); }
+  renderer.render(active.scene,active.camera);
+}
+activate('slope'); resize(); loop();
+
+</script>
+</body>
+</html>

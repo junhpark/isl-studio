@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ISL scenario (pattern mode) — ISL Studio ↔ OGS contract v0.1",
+  "type": "object",
+  "required": ["schema_version","mode","grid","aquifer","wells","chemistry","schedule"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "mode": {"enum": ["pattern","slope"]},
+    "grid": {"type":"object","required":["nx","ny","domain_m","aquifer_thickness_m"],
+      "properties":{"nx":{"type":"integer","minimum":20},"ny":{"type":"integer","minimum":20},
+        "domain_m":{"type":"number","exclusiveMinimum":0,"description":"정방형 도메인 한 변 (m). OGS 절점은 브라우저 셀 중심에 놓임"},
+        "aquifer_thickness_m":{"type":"number","exclusiveMinimum":0}}},
+    "aquifer": {"type":"object","required":["K_m_per_d","porosity","regional_gradient"],
+      "properties":{"K_m_per_d":{"type":"number","exclusiveMinimum":0},"porosity":{"type":"number","exclusiveMinimum":0,"maximum":1},
+        "regional_gradient":{"type":"number","description":"+x 방향 하강 수두경사"},
+        "dispersivity_L_m":{"type":"number","default":2.0},"dispersivity_T_m":{"type":"number","default":0.2},"pore_diffusion_m2_s":{"type":"number","default":1e-9}}},
+    "wells": {"type":"object","required":["pattern","spacing_m","n","outer_producers","Q_inj_m3_per_d","bleed"],
+      "properties":{"pattern":{"enum":["5spot","7spot","line"]},"spacing_m":{"type":"number"},"n":{"type":"integer","minimum":1},
+        "outer_producers":{"type":"boolean"},"Q_inj_m3_per_d":{"type":"number"},"bleed":{"type":"number","description":"(양수−주입)/주입, 음수 허용"},
+        "list":{"type":"array","description":"비어 있으면 패턴 규칙으로 생성","items":{"type":"object","required":["x","y","type"],
+          "properties":{"x":{"type":"number"},"y":{"type":"number"},"type":{"enum":["I","P"]},"Q_m3_per_d":{"type":"number"}}}}}},
+    "chemistry": {"type":"object","properties":{"lixiviant_conc_mol_m3":{"type":"number"},"tracer_only":{"type":"boolean","description":"1단계는 true 고정"}}},
+    "schedule": {"type":"object","properties":{"leach_pv":{"type":"number"},"restore_pv":{"type":"number"},"pv_volume_m3":{"type":["number","null"]},"dt_days":{"type":"number","default":1.0}}},
+    "monitoring": {"type":"object","properties":{"ring_offset_m":{"type":"number"},"ucl_fraction":{"type":"number"}}},
+    "provenance": {"type":"object"}
+  }
+}

@@ -1,0 +1,4 @@
+ogs==6.5.9
+meshio>=5.3
+numpy>=1.26
+jsonschema>=4.20

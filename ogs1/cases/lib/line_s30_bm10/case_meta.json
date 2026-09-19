@@ -1,0 +1,163 @@
+{
+ "scenario": {
+  "schema_version": "0.1",
+  "mode": "pattern",
+  "grid": {
+   "nx": 80,
+   "ny": 80,
+   "domain_m": 288.0,
+   "aquifer_thickness_m": 8.0
+  },
+  "aquifer": {
+   "K_m_per_d": 1.0,
+   "porosity": 0.3,
+   "regional_gradient": 0.002,
+   "dispersivity_L_m": 2.0,
+   "dispersivity_T_m": 0.2,
+   "pore_diffusion_m2_s": 1e-09
+  },
+  "wells": {
+   "pattern": "line",
+   "spacing_m": 30.0,
+   "n": 2,
+   "outer_producers": true,
+   "Q_inj_m3_per_d": 100.0,
+   "bleed": -0.1,
+   "list": [
+    {
+     "x": 114.0,
+     "y": 108.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 144.0,
+     "y": 108.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 174.0,
+     "y": 108.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 114.0,
+     "y": 126.0,
+     "type": "I",
+     "Q_m3_per_d": 100.0
+    },
+    {
+     "x": 144.0,
+     "y": 126.0,
+     "type": "I",
+     "Q_m3_per_d": 100.0
+    },
+    {
+     "x": 174.0,
+     "y": 126.0,
+     "type": "I",
+     "Q_m3_per_d": 100.0
+    },
+    {
+     "x": 114.0,
+     "y": 144.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 144.0,
+     "y": 144.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 174.0,
+     "y": 144.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 114.0,
+     "y": 162.0,
+     "type": "I",
+     "Q_m3_per_d": 100.0
+    },
+    {
+     "x": 144.0,
+     "y": 162.0,
+     "type": "I",
+     "Q_m3_per_d": 100.0
+    },
+    {
+     "x": 174.0,
+     "y": 162.0,
+     "type": "I",
+     "Q_m3_per_d": 100.0
+    },
+    {
+     "x": 114.0,
+     "y": 180.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 144.0,
+     "y": 180.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    },
+    {
+     "x": 174.0,
+     "y": 180.0,
+     "type": "P",
+     "Q_m3_per_d": 60.0
+    }
+   ]
+  },
+  "chemistry": {
+   "lixiviant_conc_mol_m3": 250.0,
+   "tracer_only": true
+  },
+  "schedule": {
+   "leach_pv": 5.0,
+   "restore_pv": 2.0,
+   "pv_volume_m3": 22032.0,
+   "dt_days": 1.0
+  },
+  "monitoring": {
+   "ring_offset_m": 25.0,
+   "ucl_fraction": 0.03
+  },
+  "provenance": {
+   "exported_from": "make_library.py",
+   "case": "line_s30_bm10",
+   "date": "2026-09-19"
+  }
+ },
+ "inj_node_ids": [
+  2751,
+  2759,
+  2768,
+  3551,
+  3559,
+  3568
+ ],
+ "prod_node_ids": [
+  2351,
+  2359,
+  2368,
+  3151,
+  3159,
+  3168,
+  3951,
+  3959,
+  3968
+ ],
+ "t_end_days": 184.0,
+ "DX": 3.6,
+ "NX": 80,
+ "NY": 80,
+ "pv_days": 36.72
+}

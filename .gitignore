@@ -1,0 +1,13 @@
+# OGS heavy outputs (regenerate with ogs1/runner/run_case.py)
+fields.bin
+*.vtu
+*.pvd
+*.log
+ogs1/logs/
+ogs1/cases/browser160/
+# scratch
+__pycache__/
+node_modules/
+*.pdf
+*.jpg
+.DS_Store

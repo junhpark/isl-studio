@@ -1,0 +1,46 @@
+{
+ "schema_version": "0.1",
+ "mode": "pattern",
+ "grid": {
+  "nx": 80,
+  "ny": 80,
+  "domain_m": 288.0,
+  "aquifer_thickness_m": 8.0
+ },
+ "aquifer": {
+  "K_m_per_d": 1.0,
+  "porosity": 0.3,
+  "regional_gradient": 0.002,
+  "dispersivity_L_m": 2.0,
+  "dispersivity_T_m": 0.2,
+  "pore_diffusion_m2_s": 1e-09
+ },
+ "wells": {
+  "pattern": "line",
+  "spacing_m": 50.0,
+  "n": 2,
+  "outer_producers": true,
+  "Q_inj_m3_per_d": 100.0,
+  "bleed": -0.1,
+  "list": []
+ },
+ "chemistry": {
+  "lixiviant_conc_mol_m3": 250.0,
+  "tracer_only": true
+ },
+ "schedule": {
+  "leach_pv": 5.0,
+  "restore_pv": 2.0,
+  "pv_volume_m3": null,
+  "dt_days": 1.0
+ },
+ "monitoring": {
+  "ring_offset_m": 25.0,
+  "ucl_fraction": 0.03
+ },
+ "provenance": {
+  "exported_from": "make_library.py",
+  "case": "line_s50_bm10",
+  "date": "2026-09-19"
+ }
+}
