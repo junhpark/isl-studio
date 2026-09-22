@@ -70,8 +70,8 @@
                 <time_stepping>
                     <type>FixedTimeStepping</type>
                     <t_initial>0</t_initial>
-                    <t_end>15897600.0</t_end>
-                    <timesteps><pair><repeat>184</repeat><delta_t>86400.0</delta_t></pair></timesteps>
+                    <t_end>21168000.0</t_end>
+                    <timesteps><pair><repeat>245</repeat><delta_t>86400.0</delta_t></pair></timesteps>
                 </time_stepping>
             </process>
         </processes>
@@ -91,7 +91,8 @@
         <parameter><name>p_bc</name><type>Function</type><expression>200000 - 19.62*x</expression></parameter>
         <parameter><name>c0</name><type>Constant</type><value>0</value></parameter>
         <parameter><name>c_inj</name><type>Constant</type><value>250.0</value></parameter>
-        <parameter><name>q_inj</name><type>Constant</type><value>0.14467592592592593</value></parameter>
+        <parameter><name>q_inj_on</name><type>Constant</type><value>0.14467592592592593</value></parameter>
+        <parameter><name>q_inj</name><type>CurveScaled</type><curve>inj_schedule</curve><parameter>q_inj_on</parameter></parameter>
         <parameter><name>q_prod</name><type>Constant</type><value>-0.10127314814814814</value></parameter>
     </parameters>
     <process_variables>
@@ -114,10 +115,15 @@
             <order>1</order>
             <initial_condition>c0</initial_condition>
             <boundary_conditions>
-                <boundary_condition><mesh>inj</mesh><type>Dirichlet</type><parameter>c_inj</parameter></boundary_condition>
+                <boundary_condition><mesh>inj</mesh><type>DirichletWithinTimeInterval</type><parameter>c_inj</parameter>
+                    <time_interval><start>0</start><end>15107657.14285714</end></time_interval></boundary_condition>
             </boundary_conditions>
         </process_variable>
     </process_variables>
+    <curves>
+        <!-- 침출(주입 켬) → t_leach 이후 복원(주입 끔, 양수는 계속) -->
+        <curve><name>inj_schedule</name><coords>0 15107657.14285714 15107658.14285714 42422400.0</coords><values>1 1 0 0</values></curve>
+    </curves>
     <nonlinear_solvers>
         <nonlinear_solver>
             <name>basic_picard</name>

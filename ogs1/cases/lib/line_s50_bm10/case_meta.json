@@ -155,9 +155,11 @@
   4439,
   4452
  ],
- "t_end_days": 510.0,
+ "t_end_days": 794.0,
+ "t_leach_days": 566.6666666666666,
  "DX": 3.85,
  "NX": 80,
  "NY": 80,
- "pv_days": 102.0
+ "pv_days": 113.33333333333333,
+ "pv_basis": "production"
 }

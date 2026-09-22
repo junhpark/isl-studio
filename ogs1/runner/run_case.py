@@ -30,11 +30,13 @@ def run(case_dir, do_run=True, keep_v1=False):
     V=DX*DX*meta['scenario']['grid']['aquifer_thickness_m']*meta['scenario']['aquifer']['porosity']
     ninj=len([q for q in sc['wells']['list'] if q['type']=='I'])
     Qi=[q['Q_m3_per_d'] for q in sc['wells']['list'] if q['type']=='I'][0]
-    mass_ratio=[float(out[t,1].sum()*V/max(ninj*Qi*times[t],1e-9)) for t in range(T)]
+    t_leach=meta.get('t_leach_days',times[-1])   # 복원 단계에는 주입이 없으므로 누적 주입은 t_leach 에서 멈춘다
+    mass_ratio=[float(out[t,1].sum()*V/max(ninj*Qi*min(times[t],t_leach),1e-9)) for t in range(T)]
     prod=[q for q in sc['wells']['list'] if q['type']=='P']; pc_max=[float(max(out[t,1,min(NX-1,int(q['x']/DX))+min(NY-1,int(q['y']/DX))*NX] for q in prod)) for t in range(T)]
     res={'nx':NX,'ny':NY,'DX':DX,'mass_balance':{'retained_over_injected':mass_ratio,'producer_c_max':pc_max,
          'note':'retained_over_injected 는 파과 후 1 미만이어야 하고 producer_c_max 는 1을 크게 넘으면 안 됨'},'domain_m':sc['grid']['domain_m'],'fields':['head_m','tracer_frac'],'times_days':times,'pv_days':meta['pv_days'],
-         'sweep_frac':sweep,'tracer_outside_ore_frac':outside,'wells':w,'source':'OpenGeoSys 6.5.9 ComponentTransport (tracer, advective form, IsotropicDiffusion 0.5)','scenario':sc}
+         'pv_basis':meta.get('pv_basis','injection'),'t_leach_days':t_leach,'leach_pv':sc['schedule']['leach_pv'],'restore_pv':sc['schedule'].get('restore_pv',0.0),
+         'sweep_frac':sweep,'tracer_outside_ore_frac':outside,'wells':w,'source':'OpenGeoSys 6.5.9 ComponentTransport (tracer, advective form, IsotropicDiffusion 0.5; leach + groundwater-sweep restoration)','scenario':sc}
     try:
         res.update(write_v2(case_dir,out)); fsize=os.path.getsize(os.path.join(case_dir,res['fields_file']))
     except ValueError as e:                     # 비정상 수두 → 무압축 v1 로

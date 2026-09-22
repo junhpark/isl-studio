@@ -35,7 +35,7 @@ EQ = {
  'disp_fv':   r"$J_{x,i+\frac{1}{2}} = \phi\,D_{xx,f}\,\dfrac{C_{i+1}-C_i}{\Delta x}\,\Delta y\,B, \qquad D_{xx,f} = \dfrac{\alpha_{L,e} v_x^2 + \alpha_T v_y^2}{|\mathbf{v}|} + D_m$",
  'numdisp':   r"$D_{num} = \dfrac{|\mathbf{v}|\,\Delta x}{2} \;\;\Rightarrow\;\; \alpha_{num} = \dfrac{\Delta x}{2}, \qquad \alpha_{L,e} = \max\!\left(0,\;\alpha_L - \dfrac{\Delta x}{2}\right)$",
  'stream':    r"$\mathbf{x}_{k+1} = \mathbf{x}_k + \Delta s\,\hat{\mathbf{v}}\!\left(\mathbf{x}_k + \frac{\Delta s}{2}\hat{\mathbf{v}}(\mathbf{x}_k)\right), \qquad \hat{\mathbf{v}} = \mathbf{v}/|\mathbf{v}|$",
- 'pv':        r"$PV = \phi\,B\,A_{pattern}, \qquad t_{1PV} = \dfrac{PV}{\sum Q_{inj}}, \qquad \sum Q_{prod} = (1+\beta)\sum Q_{inj}$",
+ 'pv':        r"$PV = \phi\,B\,A_{pattern}, \qquad \sum Q_{prod} = (1+\beta)\sum Q_{inj}, \qquad t_{1PV} = \dfrac{PV}{\sum Q_{prod}}$",
  'pattern_metrics': r"$\mathrm{sweep} = \dfrac{\#\{c \in \mathrm{ore}: C_c/c_{inj} > 0.05\}}{\#\mathrm{ore}}, \qquad L = \dfrac{M_{out,boundary} + \sum_{c \notin \mathrm{ore}} M_c}{\sum Q_{inj} c_{inj}\, t}$",
  # 6 OGS
  'ogs_flow':  r"$\phi\,\dfrac{\partial \rho}{\partial p}\dfrac{\partial p}{\partial t} + \nabla\!\cdot\!\left(\rho\,\mathbf{q}\right) = Q_p, \qquad \mathbf{q} = -\dfrac{\mathbf{k}}{\mu}\left(\nabla p - \rho\,\mathbf{g}\right)$",

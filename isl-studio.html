@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>현장용액채광(ISL) 비교 시뮬레이터 — 프로토타입</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='1.5' y='1.5' width='21' height='21' rx='5.5' fill='%23D27A3E'/%3E%3Cpath d='M5.5 14c2.2-1.3 4.4-1.3 6.5 0s4.3 1.3 6.5 0' stroke='%231A0F07' stroke-width='1.7' fill='none' stroke-linecap='round'/%3E%3Cpath d='M5.5 18c2.2-1.3 4.4-1.3 6.5 0s4.3 1.3 6.5 0' stroke='%231A0F07' stroke-width='1.7' fill='none' stroke-linecap='round' opacity='.5'/%3E%3Cpath d='M12 4.8v6.4M9.5 8.9L12 11.4l2.5-2.5' stroke='%231A0F07' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<title>ISL Studio — 현장용액채광 비교 시뮬레이터</title>
 <style>
 :root{
   --bg:#101216; --chrome:#16181D; --panel:#1A1D22; --panel2:#22262D; --panel3:#2B3038;
@@ -142,10 +143,18 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 #status .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
 #status .d{font-size:21px;font-weight:600;line-height:1.1;color:var(--ink);white-space:nowrap}
 #status .d i{margin-left:4px;font-size:11px;font-weight:400;font-style:normal;color:var(--ink3);font-family:inherit}
+#status .d .info{vertical-align:middle;margin-left:2px}
+#status .d .info[hidden]{display:none}
 #status .ph{max-width:66%;padding:1px 8px;border-radius:10px;border:1px solid rgba(224,179,60,.28);background:rgba(224,179,60,.08);color:var(--liquor);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #status .cap{margin-top:8px;font-size:11.5px;line-height:1.5;color:var(--ink2)}
 #status .ref{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:11px;font-weight:600;color:#86BDF2}
-#status .ref i{width:6px;height:6px;border-radius:50%;background:currentColor}
+#status .ref i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.refcv{display:block;width:100%;height:100px;border-radius:4px}
+.refstat{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:6px;font-size:11px;color:var(--ink2)}
+.refstat .mis{flex:1 0 100%;color:#E0B33C;line-height:1.45}
+#lang{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;flex:0 0 auto}
+#lang button{padding:0 8px;height:26px;border:none;background:none;color:var(--ink3);font-size:11px;font-weight:600;cursor:pointer;letter-spacing:.3px}
+#lang button.on{background:var(--panel2);color:var(--ink)}
 
 #legend{position:absolute;right:12px;bottom:12px;width:252px;max-height:calc(100% - 190px);display:flex;flex-direction:column;overflow:hidden}
 #legend .lg-hd{flex:0 0 auto;display:flex;align-items:center;gap:7px;height:32px;padding:0 9px 0 11px;cursor:pointer;user-select:none}
@@ -324,11 +333,12 @@ ul.limits li b{color:var(--ink);font-weight:500}
       <b>ISL Studio</b><span>현장용액채광 비교 시뮬레이터</span>
     </div>
     <nav id="tabs">
-      <button data-tab="slope" class="on" data-info-t="사면 중력식" data-info="이온흡착형 희토류 광상(중국 남부·동남아). 불포화 사면 상부에 침출액을 넣고 하단 집액구에서 중력으로 회수합니다.">사면 중력식</button>
-      <button data-tab="pattern" data-info-t="정호 패턴식" data-info="피압대수층(우라늄·구리 ISR). 주입정·회수정을 격자로 배치하고 양수를 주입보다 몇 % 많게 유지해 수리학적으로 가둡니다.">정호 패턴식</button>
-      <button data-tab="compare" data-info-t="비교" data-info="현재 설정으로 두 방식을 끝까지 계산해 지표를 나란히 놓습니다.">비교</button>
+      <button data-tab="slope" class="on" data-info-t="사면 중력식" data-info="이온흡착형 희토류 광상(중국 남부·동남아) · 불포화 사면 상부에 침출제를 넣고 하단 집액구에서 중력으로 회수">사면 중력식</button>
+      <button data-tab="pattern" data-info-t="정호 패턴식" data-info="피압대수층(우라늄·구리 ISR) · 주입정·회수정을 격자로 배치, 양수를 주입보다 몇 % 많게 유지해 수리학적으로 봉쇄">정호 패턴식</button>
+      <button data-tab="compare" data-info-t="비교" data-info="현재 설정으로 두 방식을 끝까지 계산해 지표를 나란히 비교">비교</button>
     </nav>
     <div class="grow"></div>
+    <div id="lang" role="group" aria-label="Language"><button type="button" data-lang="ko" class="on">KO</button><button type="button" data-lang="en">EN</button></div>
     <button id="proto" class="badge" type="button"><i></i>PROTOTYPE</button>
     <button id="helpbtn" class="iconbtn" type="button" aria-label="안내" data-info-t="안내" data-info="이 도구의 용도·한계·조작법"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.1-2.4 3.7"/><circle cx="12" cy="17.1" r=".9" fill="currentColor" stroke="none"/></svg></button>
   </header>
@@ -341,8 +351,8 @@ ul.limits li b{color:var(--ink);font-weight:500}
       <div id="modes" class="glass"></div>
       <div id="rightstack">
         <div id="status" class="glass">
-          <div class="row"><div class="d num"><span id="dayv">0</span><i id="dayu">일차</i></div><div class="ph" id="phase">—</div></div>
-          <div class="ref" id="refline" hidden><i></i>OGS 참조해 표시 중</div>
+          <div class="row"><div class="d num"><span id="dayv">0</span><i id="dayu">일차</i><button type="button" class="info" id="dayinfo" data-info-t="시간축" data-info="" aria-label="설명"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.2"/><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none"/></svg></button></div><div class="ph" id="phase">—</div></div>
+          <div class="ref" id="refline" hidden><i></i><span id="reftext">OGS 참조해 표시 중</span></div>
           <div class="cap" id="cap2">—</div>
         </div>
       </div>
@@ -363,6 +373,10 @@ ul.limits li b{color:var(--ink);font-weight:500}
       <div class="sec fold">
         <div class="hd"><svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><h3>시간 이력</h3><button type="button" class="info" data-info-t="시간 이력" data-info-from="chart-hint" aria-label="설명"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.2"/><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none"/></svg></button></div>
         <div class="bd"><canvas class="mini" id="chart"></canvas><p id="chart-hint" hidden></p></div>
+      </div>
+      <div class="sec fold" id="refsec" hidden>
+        <div class="hd"><svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><h3>참조해 비교</h3><button type="button" class="info" data-info-t="참조해 비교" data-info="현재 표시 항목(침출제 또는 수두)의 평면도 · 왼쪽 브라우저 근사, 가운데 OGS 유한요소 참조해, 오른쪽 차이(브라우저 − OGS · 붉음 = 브라우저가 큼, 푸름 = OGS가 큼) · 노란 사각형 = 광체 범위" aria-label="설명"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.2"/><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none"/></svg></button></div>
+        <div class="bd"><canvas id="refcv" class="refcv"></canvas><div id="refstat" class="refstat"></div></div>
       </div>
       <div class="sec fold collapsed">
         <div class="hd"><svg class="i chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg><h3>상세 지표</h3></div>
@@ -397,15 +411,15 @@ ul.limits li b{color:var(--ink);font-weight:500}
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="21" height="21" rx="5.5" fill="#D27A3E"/><path d="M5.5 14c2.2-1.3 4.4-1.3 6.5 0s4.3 1.3 6.5 0" stroke="#1A0F07" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M5.5 18c2.2-1.3 4.4-1.3 6.5 0s4.3 1.3 6.5 0" stroke="#1A0F07" stroke-width="1.7" fill="none" stroke-linecap="round" opacity=".5"/><path d="M12 4.8v6.4M9.5 8.9L12 11.4l2.5-2.5" stroke="#1A0F07" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <div><b id="about-t">ISL Studio</b><span>현장용액채광(In-Situ Leaching) 비교 시뮬레이터 · 프로토타입 v1.1</span></div>
     </div>
-    <div class="warnline"><svg class="i" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.2" r=".9" fill="currentColor" stroke="none"/></svg><div>예시용 프로토타입입니다. 거친 근사 모델이며 설계·인허가·환경영향평가의 근거로 사용할 수 없습니다. 기본값은 공개 문헌 인용치이고 특정 광산의 실측값이 아닙니다.</div></div>
+    <div class="warnline"><svg class="i" viewBox="0 0 24 24"><path d="M12 4l9 16H3z"/><path d="M12 10v4.5"/><circle cx="12" cy="17.2" r=".9" fill="currentColor" stroke="none"/></svg><div>예시용 프로토타입 · 거친 근사 모델로 설계·인허가·환경영향평가의 근거로 사용 불가 · 기본값은 공개 문헌 인용치이며 특정 광산의 실측값이 아님</div></div>
     <div class="two">
-      <div><h4>사면 중력식</h4><p>이온흡착형 희토류(중국 남부·동남아). 불포화 사면에 침출액을 흘려 하단 집액구에서 회수합니다. 봉쇄는 자연 차수층의 연속성에 달려 있습니다.</p></div>
-      <div><h4>정호 패턴식</h4><p>피압대수층(우라늄·구리). 주입정·회수정 격자에서 양수를 주입보다 몇 % 많게 유지해 침출액을 수리학적으로 가둡니다.</p></div>
+      <div><h4>사면 중력식</h4><p>이온흡착형 희토류(중국 남부·동남아) · 불포화 사면에 침출제를 흘려 하단 집액구에서 회수 · 봉쇄는 자연 차수층의 연속성에 좌우</p></div>
+      <div><h4>정호 패턴식</h4><p>피압대수층(우라늄·구리) · 주입정·회수정 격자에서 양수를 주입보다 몇 % 많게(bleed) 유지해 침출제를 수리학적으로 봉쇄</p></div>
     </div>
     <ul class="how">
-      <li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.2"/><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none"/></svg><span>항목 옆 ⓘ 에 마우스를 올리거나 누르면 설명과 출처가 나옵니다.</span></li>
-      <li><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><path d="M8 7l4-4 4 4M8 17l4 4 4-4"/></svg><span>드래그로 회전, 휠 또는 두 손가락으로 확대·축소. 스페이스바로 재생·정지.</span></li>
-      <li><svg class="i" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>값 칸을 눌러 숫자를 직접 입력할 수 있습니다.</span></li>
+      <li><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.2"/><circle cx="12" cy="7.8" r=".95" fill="currentColor" stroke="none"/></svg><span>항목 옆 ⓘ에 마우스를 올리거나 누르면 설명과 출처 표시</span></li>
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><path d="M8 7l4-4 4 4M8 17l4 4 4-4"/></svg><span>드래그 회전 · 휠 또는 두 손가락으로 확대·축소 · 스페이스바로 재생·정지</span></li>
+      <li><svg class="i" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg><span>값 칸을 눌러 숫자 직접 입력 가능 · 우측 상단 KO/EN으로 언어 전환</span></li>
     </ul>
     <div class="mf">
       <a href="docs/ISL-Studio-Manual.docx">사용 설명서</a>
@@ -416,11 +430,428 @@ ul.limits li b{color:var(--ink);font-weight:500}
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script id="i18n-en">
+/* 영어 표 — manual/i18n_en.json 에서 manual/i18n_build.py 가 생성. 손으로 고치지 말 것. */
+const I18N_EN={
+"ISL Studio — 현장용액채광 비교 시뮬레이터": "ISL Studio — In-Situ Leaching Comparison Simulator",
+"현장용액채광 비교 시뮬레이터": "In-situ leaching comparison simulator",
+"현장용액채광(In-Situ Leaching) 비교 시뮬레이터 · 프로토타입 v1.1": "In-situ leaching (ISL) comparison simulator · prototype v1.1",
+"사면 중력식": "Slope gravity",
+"정호 패턴식": "Well pattern",
+"비교": "Compare",
+"안내": "About",
+"설명": "Info",
+"이 도구의 용도·한계·조작법": "Purpose, limits and controls of this tool",
+"이온흡착형 희토류 광상(중국 남부·동남아) · 불포화 사면 상부에 침출제를 넣고 하단 집액구에서 중력으로 회수": "Ion-adsorption REE deposits (S. China, SE Asia) · lixiviant injected at the top of an unsaturated slope, collected by gravity in a trench at the toe",
+"피압대수층(우라늄·구리 ISR) · 주입정·회수정을 격자로 배치, 양수를 주입보다 몇 % 많게 유지해 수리학적으로 봉쇄": "Confined aquifer (uranium/copper ISR) · injectors and producers on a grid, pumping a few % above injection for hydraulic containment",
+"현재 설정으로 두 방식을 끝까지 계산해 지표를 나란히 비교": "Runs both methods to completion with the current settings and puts the metrics side by side",
+"설정": "Settings",
+"지표": "Metrics",
+"범례": "Legend",
+"재생": "Play",
+"일시정지": "Pause",
+"초기화": "Reset",
+"재생 속도": "Playback speed",
+"절개": "Cut",
+"시간축": "Time axis",
+"시간 이력": "History",
+"상세 지표": "Details",
+"참조해 비교": "Reference comparison",
+"이 모델이 하지 않는 것": "What this model does not do",
+"면 (색)": "Surfaces (color)",
+"선 · 표식": "Lines · markers",
+"표시 항목 — {0}": "Display — {0}",
+"출처": "Source",
+"가설": "hypothesis",
+"위험": "Alert",
+"주의": "Caution",
+"정상": "OK",
+"일차": "day",
+"일": "d",
+"공": "wells",
+"예시용 프로토타입 · 거친 근사 모델로 설계·인허가·환경영향평가의 근거로 사용 불가 · 기본값은 공개 문헌 인용치이며 특정 광산의 실측값이 아님": "Illustrative prototype · coarse approximate model, not a basis for design, permitting or environmental assessment · defaults are values cited from open literature, not measurements from any specific mine",
+"이온흡착형 희토류(중국 남부·동남아) · 불포화 사면에 침출제를 흘려 하단 집액구에서 회수 · 봉쇄는 자연 차수층의 연속성에 좌우": "Ion-adsorption REE (S. China, SE Asia) · lixiviant percolates through an unsaturated slope to a collection trench at the toe · containment depends on the continuity of the natural aquiclude",
+"피압대수층(우라늄·구리) · 주입정·회수정 격자에서 양수를 주입보다 몇 % 많게(bleed) 유지해 침출제를 수리학적으로 봉쇄": "Confined aquifer (uranium, copper) · a grid of injectors and producers pumped a few % above injection (bleed) contains the lixiviant hydraulically",
+"항목 옆 ⓘ에 마우스를 올리거나 누르면 설명과 출처 표시": "Hover or tap the ⓘ next to an item for its explanation and source",
+"드래그 회전 · 휠 또는 두 손가락으로 확대·축소 · 스페이스바로 재생·정지": "Drag to rotate · wheel or pinch to zoom · Space to play/pause",
+"값 칸을 눌러 숫자 직접 입력 가능 · 우측 상단 KO/EN으로 언어 전환": "Click a value box to type a number · KO/EN at top right switches language",
+"사용 설명서": "User manual",
+"기술 배경서": "Technical background",
+"시작하기": "Get started",
+"주입 조건": "Injection",
+"상·중·하 3개 구역을 5일 간격으로 순차 주입 · 0–35일 침출, 35–77일 정수(맑은 물로 잔류 모액을 밀어냄), 77–120일 배수·모니터링": "Upper, middle and lower zones injected in sequence 5 days apart · days 0–35 leaching, 35–77 water push (clean water displaces residual PLS), 77–120 drainage and monitoring",
+"주입강도": "Injection rate",
+"지표 주입공 구역에 하루 동안 넣는 물 높이 · 시험채굴장 실측 주입속도 0.0417 m/d": "Depth of water applied per day over the injection-hole zone · measured 0.0417 m/d at a trial mine",
+"침출제 농도": "Lixiviant conc.",
+"침출제(lixiviant) = 주입하는 황산암모늄 (NH₄)₂SO₄ 용액 · 경제적 범위 0.20–0.25 mol/L": "Lixiviant = the injected ammonium sulfate (NH₄)₂SO₄ solution · economic range 0.20–0.25 mol/L",
+"교환성 희토류 품위": "Exchangeable REE grade",
+"이온상(교환성) 품위 0.007–0.103 wt% · Y·중희토의 98 %는 점토·운모에 교환성으로, Ce의 94 %는 모나자이트(난용성)로 존재 · 바꾸면 계산을 처음부터 다시 시작": "Ionic (exchangeable) grade 0.007–0.103 wt% · 98 % of Y and HREE sit as exchangeable ions on clay and mica, 94 % of Ce in refractory monazite · changing it restarts the run",
+"유출 억제 조치": "Leakage controls",
+"켜고 끄며 회수율·유실률·안전율의 변화를 비교 · 도액공·양수 차단정의 포집 효율 상향분은 물리 계산이 아닌 가정값": "Toggle to compare recovery, loss and safety factor · the capture-efficiency gains of drainage holes and interceptor wells are assumed values, not physics",
+"집액구": "Collection trench",
+"사면 하단 기반암 경계의 채널 · 기본 조치라 끌 수 없음": "Channel at the bedrock contact at the toe of the slope · baseline measure, cannot be turned off",
+"도액공": "Drainage holes",
+"집액구 상부 수평공 · 포집 효율 상향(매개변수)": "Horizontal holes above the trench · raise capture efficiency (parameter)",
+"하류 차수벽": "Downstream cutoff wall",
+"하단 경계 저투수 벽체 · 격자 투수계수를 직접 낮춰 측면 유출 차단": "Low-permeability wall at the lower boundary · lowers grid conductivity directly to block lateral leakage",
+"양수 차단정": "Interceptor wells",
+"집액구 상류 회수정 · 포집 효율 추가 상향(매개변수)": "Pumping wells upstream of the trench · further raise capture efficiency (parameter)",
+"기반암 차수층 결손": "Aquiclude defect",
+"중부 사면 기반암에 고투수 창(0.6 m/d) 개방 · 자연 차수층에만 의존할 때의 위험": "Opens a high-permeability window (0.6 m/d) in the mid-slope bedrock · the risk of relying on the natural aquiclude alone",
+"침출제": "Lixiviant",
+"모액": "PLS",
+"포화도": "Saturation",
+"침출 진행도": "Leach progress",
+"수두": "Head",
+"없음": "none",
+"주입 농도": "injected conc.",
+"0 g/L": "0 g/L",
+"약 3 g/L": "~3 g/L",
+"건조": "dry",
+"포화": "saturated",
+"미침출": "unleached",
+"완전 침출": "fully leached",
+"낮음": "low",
+"높음": "high",
+"침출제 (황산암모늄, lixiviant)": "Lixiviant (ammonium sulfate)",
+"모액 (PLS · 용액 중 희토류)": "PLS (pregnant leach solution · dissolved REE)",
+"용액 포화도": "Solution saturation",
+"침출제 (lixiviant · 추적자)": "Lixiviant (tracer)",
+"모액 (PLS · 용액 중 회수 대상)": "PLS (pregnant leach solution · dissolved product)",
+"침출 진행도 (sweep)": "Leach progress (sweep)",
+"수두 (압력면)": "Head (piezometric surface)",
+"지표면": "Ground surface",
+"불투명 · 절개면 안쪽은 잘라냄": "opaque · cut away inside the section plane",
+"표토": "Topsoil",
+"비광체 · 고투수 7.1 m/d": "barren · high permeability 7.1 m/d",
+"전풍화층": "Completely weathered layer",
+"광체 · 교환성 희토류 부존 · 2.6 m/d": "ore · hosts exchangeable REE · 2.6 m/d",
+"반풍화층": "Semi-weathered layer",
+"저품위 전이대 · 1.3 m/d": "low-grade transition · 1.3 m/d",
+"기반암": "Bedrock",
+"자연 차수층(불투수) · 0.0004 m/d": "natural aquiclude (impermeable) · 0.0004 m/d",
+"사면 하단 호박색 채널 · 모액 회수": "amber channel at the slope toe · PLS recovery",
+"지표 발광": "Surface glow",
+"용액이 도달한 구역 · 위에서 본 범위": "area reached by solution · plan-view extent",
+"저투수 벽체": "low-permeability wall",
+"기반암 결손": "Bedrock defect",
+"고투수 창 · 유출 경로": "high-permeability window · leakage path",
+"주입공": "Injection holes",
+"세로선 · 주입 중 청록 점멸": "vertical lines · pulse cyan while injecting",
+"침윤선": "Phreatic line",
+"절개면 위 실선 · 포화 상단": "solid line on the section · top of saturation",
+"기반암 상면": "Bedrock top",
+"절개면 위 파선 · 차수 경계": "dashed line on the section · aquiclude boundary",
+"회수 흐름": "Recovery flow",
+"집액구 위 이동 점 · 밝을수록 농도 높음": "moving dots over the trench · brighter = higher concentration",
+"집액구 상류": "upstream of the trench",
+"주입 전": "Before injection",
+"재생 시 사면 상부 구역부터 침출제 주입 시작": "Press play to start lixiviant injection from the upper zone",
+"침출 단계 · {0} 구역 주입": "Leaching · injecting {0} zone",
+"상부": "upper",
+"상·중부": "upper + middle",
+"전": "every",
+"기반암 위에 정체수 축적 · 침출제가 사면 아래로 측방 유동": "Perched water builds on the bedrock · lixiviant flows laterally down-slope",
+"침출제가 표토를 지나 광체층(전풍화층)에 도달": "Lixiviant has passed the topsoil and reached the ore layer",
+"침출제가 표토층을 빠르게 통과 중 · 표토 투수계수는 광체층의 약 3배": "Lixiviant passing quickly through topsoil · topsoil conductivity is ~3× the ore layer",
+"정수(頂水) 단계": "Water push",
+"집액구에서 모액(PLS) 회수 중 · 시약 대신 물을 넣어 잔류 모액을 밀어냄": "PLS being recovered at the trench · water instead of reagent displaces the residual PLS",
+"시약 주입 정지, 물만 주입 · 지중에 남은 모액을 집액구 쪽으로 밀어냄": "Reagent stopped, water only · pushes remaining PLS toward the trench",
+"배수 · 모니터링": "Drainage · monitoring",
+"주입 종료, 잔류수 배수 구간 · 정체수가 줄면서 안전율 회복": "Injection finished, residual water draining · safety factor recovers as perched water recedes",
+"안전율 허용치(1.1) 미달": "Safety factor below the 1.1 limit",
+"주입량의 {0}%가 회수되지 않고 유실": "{0}% of injected water lost, not recovered",
+"기반암 차수층 결손 켜짐": "Aquiclude defect is on",
+"회수율": "Recovery",
+"유실률": "Loss",
+"최소 안전율": "Min. safety factor",
+"허용 1.1": "limit 1.1",
+"안전율": "Safety factor",
+"침출": "Leach",
+"정수": "Push",
+"배수": "Drain",
+"가로축 = 경과 일수 · 0–35일 침출, 35–77일 정수, 77–120일 배수 · 안전율은 침출과 함께 떨어졌다가 배수 후 회복": "x-axis = elapsed days · 0–35 leaching, 35–77 water push, 77–120 drainage · the safety factor falls during leaching and recovers after drainage",
+"일차 = 주입 시작 후 경과 일수 · 0–35일 침출(시약 주입), 35–77일 정수(물 주입), 77–120일 배수·모니터링": "day = days since injection began · 0–35 leaching (reagent), 35–77 water push, 77–120 drainage and monitoring",
+"모액 농도": "PLS concentration",
+"누적 시약 (황산암모늄)": "Cumulative reagent (ammonium sulfate)",
+"누적 주입": "Cumulative injection",
+"침윤선 최고 상승": "Max. phreatic rise",
+"유실 · 지표 유출": "Loss · surface runoff",
+"유실 · 기반암 저면": "Loss · through bedrock",
+"유실 · 하류 측방": "Loss · lateral downstream",
+"물질수지 잔차": "Mass-balance residual",
+"화학": "Chemistry",
+"· 이온교환을 1차 속도식 하나로 대체 · Kerr/Gapon 선택계수, 활동도, 음이온 차폐 없음": "· ion exchange replaced by a single first-order rate law · no Kerr/Gapon selectivity, activity or anion shielding",
+"불포화 흐름": "Unsaturated flow",
+"· Richards 방정식 대신 중력 지배 배수 근사 · 모관 흡수 무시": "· gravity-dominated drainage approximation instead of Richards' equation · capillary suction ignored",
+"· 현장 실적 0.3~2.0 g/L에 맞춰 속도상수를 낮춤 · 실내 컬럼(7~9 g/L)과 다름": "· rate constant lowered to match field PLS of 0.3–2.0 g/L · differs from lab columns (7–9 g/L)",
+"액/고 비": "Liquid/solid ratio",
+"· 120일 기준 L/S≈0.16으로 실제 조업(0.5~1.0)보다 낮음 · 회수율이 낮게 나옴": "· L/S ≈ 0.16 over 120 days, below real operations (0.5–1.0) · recovery comes out low",
+"사면": "Slope",
+"· 중앙 종단면 1개에서 Bishop 간이법 원호 탐색 · 3차원 효과·인장균열·지진하중 없음": "· simplified Bishop circular search on one central section · no 3-D effects, tension cracks or seismic load",
+"투수계수": "Hydraulic conductivity",
+"· Yuan 2025 Table 1 상수 · 점토 팽윤·신생 점토에 의한 K 변화(Zhang 2024) 미반영": "· constants from Yuan 2025 Table 1 · K changes from clay swelling and neoformed clay (Zhang 2024) not included",
+"스케일": "Scale",
+"· 100×60 m 단일 채굴장 · 광역 영향은 단순 면적 환산이 아님": "· a single 100×60 m block · regional impact is not a simple area scaling",
+"침출 0–35 · 정수 35–77 · 배수 77–120 일": "Leach 0–35 · push 35–77 · drain 77–120 d",
+"정호 배치": "Well layout",
+"정호 간격이 가장 큰 설계 변수 · Honeymoon(2026)은 좁은 패턴 대신 50–60 m 광역 간격을 시험 중": "Spacing is the dominant design variable · Honeymoon (2026) is trialling 50–60 m wide spacing instead of tight patterns",
+"정호 간격": "Well spacing",
+"인접 정호 사이 거리 · 문헌 범위 15–61 m": "Distance between neighbouring wells · literature range 15–61 m",
+"패턴 규모": "Pattern size",
+"패턴 반복 수 · 5-spot 2×2이면 주입정 4공 · 회수정 9공": "Number of pattern repeats · a 2×2 5-spot has 4 injectors and 9 producers",
+"외곽 정호 = 회수정": "Outer ring = producers",
+"켜면 가장 바깥 고리가 회수정(Florence Copper 방식 · 5-spot 2×2에서 주입 4 : 회수 9) · 끄면 주입정이 바깥에 와서 봉쇄가 어려움": "On: the outermost ring is producers (Florence Copper style · 4 injectors : 9 producers for a 2×2 5-spot) · off: injectors on the outside, containment becomes hard",
+"운전 조건": "Operation",
+"회수량을 주입량보다 몇 % 많게(bleed) 유지 → 패턴 안쪽으로 동수경사, 침출제 봉쇄 · 음수면 주입이 양수를 초과해 밖으로 밀려남": "Pumping a few % above injection (bleed) creates an inward gradient that contains the lixiviant · negative bleed pushes it outward",
+"주입량 / 정호": "Injection per well",
+"주입정 1공당 유량 · 투수계수로 정해지는 Thiem 상한을 넘으면 자동 제한(상세 지표에 표시)": "Flow per injector · automatically capped at the Thiem limit set by conductivity (shown in Details)",
+"총 양수량 = 총 주입량 × (1 + bleed) · 초과분은 주변 지하수가 안쪽으로 흘러들어 채움(수리학적 봉쇄) · 수 %가 표준 운영, 음수면 봉쇄 실패": "Total pumping = total injection × (1 + bleed) · the excess is made up by groundwater flowing inward (hydraulic containment) · a few % is standard practice, negative breaks containment",
+"침출제(lixiviant) = 주입 용액 · 회수한 용액은 모액(PLS)": "Lixiviant = injected solution · the recovered solution is PLS (pregnant leach solution)",
+"교환성 품위": "Exchangeable grade",
+"OGS 참조해와 비교할 때는 최소로 내려 화학 반응 끔 · 참조해는 반응 없는 추적자만 계산": "Set to minimum to switch chemistry off when comparing with the OGS reference · the reference solves a non-reactive tracer only",
+"대수층": "Aquifer",
+"IAEA 경험칙 · 투수계수 1 m/d 이상 유리, 0.1 m/d 이하는 ISL 불성립": "IAEA rule of thumb · above 1 m/d favourable, below ~0.1 m/d ISL is not viable",
+"로그 눈금(0.05–5 m/d) · 낮추면 같은 주입량에 필요한 수두 상승이 커지고 주입량 상한 감소": "Log scale (0.05–5 m/d) · lower values need more head for the same injection and lower the injection cap",
+"IAEA NF-T-1.4 경험칙": "IAEA NF-T-1.4 rule of thumb",
+"지역 동수경사": "Regional gradient",
+"패턴과 무관한 배경 지하수 흐름의 경사(−x 방향) · 클수록 봉쇄에 더 큰 bleed 필요": "Background groundwater gradient independent of the pattern (−x direction) · larger gradients need more bleed for containment",
+"종분산도 αL": "Long. dispersivity αL",
+"목표값 · 브라우저 격자는 풍상차분 수치분산(≈Δx/2, 약 1.8 m)을 이미 가지므로 목표에서 그만큼 뺀 물리 분산만 추가 · scenario.json에는 목표값 기록": "Target value · the browser grid already carries upwind numerical dispersion (≈Δx/2, ~1.8 m), so only the remainder is added as physical dispersion · scenario.json records the target",
+"참조해 기본 αL 2 m, αT 0.2 m": "Reference default αL 2 m, αT 0.2 m",
+"횡분산도 αT": "Transv. dispersivity αT",
+"OGS 참조해": "OGS reference",
+"같은 시나리오를 OpenGeoSys(유한요소)로 미리 계산해 둔 결과 · 화면의 브라우저 근사와 겹쳐 차이를 확인 · 저장소에 12개(3 패턴 × 간격 30·50 m × bleed +5·−10 %) 내장 · 다른 시나리오는 scenario.json을 내보내 OGS로 계산한 뒤 파일 선택": "The same scenario pre-computed with OpenGeoSys (finite elements) · overlaid on the browser approximation to see the difference · 12 cases bundled (3 patterns × 30/50 m spacing × bleed +5/−10 %) · for other scenarios export scenario.json, run OGS and pick the files",
+"참조해 케이스": "Reference case",
+"목록 불러오는 중…": "Loading list…",
+"목록은 웹으로 열었을 때 사용 가능": "List available when served over the web",
+"{0} (기준)": "{0} (base case)",
+"참조해 불러오기": "Load reference",
+"불러오는 중…": "Loading…",
+"고른 케이스의 설정(패턴·간격·bleed·주입량·투수계수·분산도)으로 화면을 맞추고, 교환성 품위를 최소로 내려 화학 반응을 끈 뒤 OGS 결과를 겹침": "Sets the controls to the chosen case (pattern, spacing, bleed, injection, conductivity, dispersivity), turns chemistry off by minimising the grade, then overlays the OGS result",
+"현재 설정을 계약 v0.1 형식으로 저장 · ogs1/runner/make_case.py 의 입력": "Saves the current settings in contract v0.1 format · input for ogs1/runner/make_case.py",
+"스냅샷": "Snapshot",
+"현재 시점의 수두·추적자 배열 저장 · ogs1/runner/compare.py 로 수치 비교": "Saves the current head and tracer arrays · for numeric comparison with ogs1/runner/compare.py",
+"파일 선택…": "Choose files…",
+"results.json + fields 파일": "results.json + fields file",
+"3D 면에 OGS 결과 표시": "Show OGS result on the 3D surface",
+"켜면 3D 평면의 침출제·수두가 브라우저 대신 OGS 결과로 바뀜 · 브라우저 계산은 그대로 진행 · 우측 \"참조해 비교\"에 두 결과와 차이를 나란히 표시": "On: the lixiviant/head surface in 3D shows the OGS result instead of the browser · the browser keeps computing · \"Reference comparison\" on the right shows both and their difference side by side",
+"먼저 참조해를 불러올 것 — 목록에서 골라 \"참조해 불러오기\" 또는 \"파일 선택…\"": "Load a reference first — pick from the list and press \"Load reference\", or \"Choose files…\"",
+"results.json 과 fields 파일(fields.v2.bin.gz 또는 fields.bin) 두 개를 함께 선택": "Select both results.json and the fields file (fields.v2.bin.gz or fields.bin)",
+"참조해 파일을 읽지 못함": "Could not read the reference files",
+"참조해를 가져오지 못함": "Could not fetch the reference",
+"이 기능은 저장소 폴더 구조가 그대로인 상태에서 웹으로 열었을 때 동작(GitHub Pages 등) · HTML 파일만 따로 열었다면 \"파일 선택…\"으로 results.json 과 fields 파일을 직접 선택": "This works when the page is served from the repository folder structure (e.g. GitHub Pages) · if you opened the HTML file alone, use \"Choose files…\" to pick results.json and the fields file",
+"이온흡착형 풍화토 가정": "Ion-adsorption regolith assumption",
+"투수계수를 전풍화층 값 0.16 m/d(Wang 2022)로 변경 · Yuan 2025는 2.59 m/d로 한 자릿수 차이 · 사면형 광상은 불포화·비폐색이라 본래 패턴식 대상이 아님": "Sets conductivity to the completely-weathered value 0.16 m/d (Wang 2022) · Yuan 2025 reports 2.59 m/d, an order of magnitude apart · slope deposits are unsaturated and unconfined, so not a natural fit for well patterns",
+"격자 크기 불일치": "Grid size mismatch",
+"도메인 크기 불일치": "Domain size mismatch",
+"같은 시나리오로 다시 계산할 것": "recompute with the same scenario",
+"주의: 이 참조해는 물질수지가 의심스러움": "Warning: the mass balance of this reference looks wrong",
+"잔존/주입": "retained/injected",
+"파과 후 0.95 미만이어야 함": "should be below 0.95 after breakthrough",
+"회수정 최대 농도": "producer max. concentration",
+"1.2 이하여야 함": "should be at most 1.2",
+"회수정이 용질을 빼지 않는 결함(FullUpwind 또는 보존형)일 수 있음 · 불러오기는 진행": "Producers may not be removing solute (FullUpwind or conservative form defect) · loading anyway",
+"참고: 이 참조해에는 물질수지 정보가 없음(구버전 run_case.py) · 결과를 신뢰하기 전에 잔존/주입 비를 확인할 것": "Note: this reference has no mass-balance data (older run_case.py) · check the retained/injected ratio before trusting it",
+"패턴": "pattern",
+"외곽 회수정": "outer producers",
+"주입량": "injection rate",
+"동수경사": "gradient",
+"교환성 품위(반응 켜짐)": "exchangeable grade (chemistry on)",
+"브라우저": "Browser",
+"데이터 범위 밖": "outside data range",
+"OGS 프레임": "OGS frame",
+"수두 RMS 차": "Head RMS diff.",
+"추적자 R²": "Tracer R²",
+"참조해 시나리오와 현재 설정이 다름": "Current settings differ from the reference scenario",
+"현재 표시 항목(침출제 또는 수두)의 평면도 · 왼쪽 브라우저 근사, 가운데 OGS 유한요소 참조해, 오른쪽 차이(브라우저 − OGS · 붉음 = 브라우저가 큼, 푸름 = OGS가 큼) · 노란 사각형 = 광체 범위": "Plan view of the current display item (lixiviant or head) · left: browser approximation, middle: OGS finite-element reference, right: difference (browser − OGS · red = browser higher, blue = OGS higher) · yellow rectangle = ore extent",
+"3D 면 = OGS 참조해": "3D surface = OGS reference",
+"OGS 데이터 범위 밖 · 브라우저 결과 표시": "Outside the OGS data range · showing the browser result",
+"이 표시 항목은 OGS에 없음 · 침출제·수두에서만 OGS 표시": "OGS has no data for this item · shown for lixiviant and head only",
+"OGS 참조해 표시 중": "Showing OGS reference",
+"대수층 상면": "Aquifer top",
+"광체 · 두께 8 m · 평면도에 표시 항목이 겹침": "ore · 8 m thick · display item drawn on the plan view",
+"상부 차수층": "Upper aquiclude",
+"불투수 · 안쪽은 걷어내고 테두리만": "impermeable · interior removed, rim only",
+"하부 차수층": "Lower aquiclude",
+"불투수": "impermeable",
+"광체 밖 대수층": "Aquifer outside ore",
+"품위 0 · 실선 사각형 바깥": "grade 0 · outside the solid rectangle",
+"주입정 ▼ {0}공": "Injectors ▼ {0}",
+"꼭짓점이 땅을 향한 원뿔 · 침출제 주입": "cone pointing down · lixiviant injection",
+"회수정 ▲ {0}공": "Producers ▲ {0}",
+"꼭짓점이 위를 향한 원뿔 · 모액(PLS) 양수": "cone pointing up · PLS pumping",
+"감시정 12공": "Monitoring wells (12)",
+"회색 원기둥 · 2회 연속 초과 시 적색": "grey cylinders · red after two consecutive exceedances",
+"유선 · 포집": "Streamline · captured",
+"주입정에서 출발해 회수정에 도달": "starts at an injector and reaches a producer",
+"유선 · 이탈": "Streamline · escaped",
+"경계 밖으로 나감 = 봉쇄 실패": "leaves the boundary = containment failure",
+"유선 · 정체": "Streamline · stagnant",
+"속도 0 근처에서 멈춤": "stops near zero velocity",
+"실선 사각형": "Solid rectangle",
+"광체 범위 · 회수율 분모": "ore extent · denominator of recovery",
+"점선 사각형": "Dashed rectangle",
+"감시정 링": "monitoring-well ring",
+"수두면": "Head surface",
+"절개면 위 실선 · 주입정에서 솟고 회수정에서 꺼짐": "solid line on the section · rises at injectors, dips at producers",
+"재생 시 주입정에서 침출제 주입, 회수정 양수 시작 · 유선 색 확인: 적색 유선이 있으면 봉쇄 실패 배치": "Press play to start injecting lixiviant and pumping producers · check streamline colours: any red streamline means the layout is not contained",
+"침출 단계 ({0})": "Leaching ({0})",
+"복원 · 지하수 스윕 ({0})": "Restoration · groundwater sweep ({0})",
+"유선의 {0}%가 회수정에 잡히지 않고 밖으로 이탈 · 외곽을 회수정으로 바꾸거나 bleed 상향 필요": "{0}% of streamlines escape without reaching a producer · make the outer ring producers or raise bleed",
+"감시정 {0}공에서 추적자 관리치 초과": "Tracer above the control limit at {0} monitoring well(s)",
+"포집 영역 닫힘 · 정체 구역(꽃잎 모양)은 침출 진행도 모드에서 확인": "Capture zone is closed · stagnant petals show in the leach-progress view",
+"주입 정지, 양수만 계속 · 남은 침출제를 되끌어오는 구간 · 실제 조업에서는 회수보다 오래 걸림": "Injection stopped, pumping continues · pulls back the remaining lixiviant · in practice takes longer than the leach itself",
+"감시정 {0}/12 초과 · 규정상 지시항목 2개 동시 초과가 excursion 기준, 여기서는 추적자 1개로 대체": "{0}/12 monitoring wells exceeded · regulations define an excursion as two indicators exceeded together; here a single tracer stands in",
+"유선 {0}%가 도메인 밖으로 이탈": "{0}% of streamlines leave the domain",
+"투수계수 {0} m/d에서 허용 수위강하(15 m) 안에 넣을 수 있는 주입량이 정호당 {1} m³/d로 제한 · 1 PV에 {2}일": "At K = {0} m/d the injection that fits within the allowed drawdown (15 m) is capped at {1} m³/d per well · 1 PV takes {2} days",
+"PV(pore volume, 공극체적) = 광체 면적 × 대수층 두께 × 공극률 = {0} m³ · 시간축 = 누적 양수량 ÷ PV, 즉 광체 속 물을 몇 번 갈았는가 · 1 PV ≈ {1}일 · 침출 0–{2} PV(주입 + 양수), 복원 {3}–{4} PV(주입 정지, 양수만)": "PV (pore volume) = ore area × aquifer thickness × porosity = {0} m³ · time axis = cumulative pumped volume ÷ PV, i.e. how many times the water in the ore has been replaced · 1 PV ≈ {1} days · leaching 0–{2} PV (injection + pumping), restoration {3}–{4} PV (injection off, pumping only)",
+"% 광체 밖 침출제": "% lixiviant outside ore",
+"감시정 초과": "Exceedances",
+"2회 연속 UCL 초과": "two consecutive UCL exceedances",
+"침출 0–{0} PV": "Leach 0–{0} PV",
+"복원 {0}–{1} PV": "Restore {0}–{1} PV",
+"가로축 = 누적 양수량을 공극체적(PV)으로 나눈 값 · 1 PV ≈ {0}일 · 침출 0–{1} PV, 복원 {2}–{3} PV": "x-axis = cumulative pumped volume divided by the pore volume (PV) · 1 PV ≈ {0} days · leaching 0–{1} PV, restoration {2}–{3} PV",
+"OGS 참조해 프레임": "OGS reference frame",
+"수두 RMS 차 (브라우저−OGS)": "Head RMS diff. (browser − OGS)",
+"추적자 R² (브라우저 vs OGS)": "Tracer R² (browser vs OGS)",
+"OGS sweep 접촉율": "OGS sweep efficiency",
+"OGS 광체 밖 추적자": "OGS tracer outside ore",
+"경과 일수": "Elapsed days",
+"1 PV 소요": "Days per PV",
+"정호당 주입 (K 제한)": "Injection per well (K-limited)",
+"{0} / 허용 {1}": "{0} / allowed {1}",
+"정호 수 (주입/회수)": "Wells (injectors/producers)",
+"도메인 한 변": "Domain side",
+"모액 농도 (현재/평균)": "PLS concentration (now/mean)",
+"50% 회수 도달": "50 % recovery reached",
+"80% 회수 도달": "80 % recovery reached",
+"누적 양수": "Cumulative pumping",
+"시약 순환 총량 (재사용 미고려)": "Reagent circulated (no reuse credit)",
+"유실률 최대 (침출 중)": "Peak loss (during leach)",
+"이탈 유선 비율 (침출 중)": "Escaped streamlines (during leach)",
+"경계 유출 추적자": "Tracer lost at boundary",
+"흐름": "Flow",
+"· 2차원 평면 정류 피압류(Laplace) · 연직 sweep·층상 불균질 없음 · 수두는 정호 조건이 바뀔 때만 다시 풂": "· 2-D steady confined flow (Laplace) · no vertical sweep or layering · head re-solved only when well conditions change",
+"분산": "Dispersion",
+"· 종·횡 분산도(αL, αT)를 면 속도 기반 대각 텐서로 적용 · 교차항(Dxy) 생략 · αL은 목표값에서 격자 수치분산(Δx/2)을 뺀 유효값 · 명시적 스킴이라 분산이 크면 부분스텝 단축": "· longitudinal/transverse dispersivity (αL, αT) as a diagonal tensor from face velocities · cross term (Dxy) omitted · effective αL = target minus grid numerical dispersion (Δx/2) · explicit scheme, so large dispersion shortens the sub-step",
+"· 사면식과 같은 1차 속도식 · 우라늄 침출 화학(산화·탄산염)이 아닌 이온교환 형태": "· the same first-order rate law as the slope model · ion exchange, not uranium leach chemistry (oxidation, carbonate)",
+"· 규정은 지시항목(Cl⁻·전기전도도·총알칼리도) 2개 동시 초과 · 여기서는 추적자 1개의 2회 연속 초과로 대체": "· regulations require two indicators (Cl⁻, conductivity, total alkalinity) exceeded together · here two consecutive exceedances of a single tracer",
+"OGS 참조해 대비": "Against the OGS reference",
+"· 수치는 COMPARE.md 부록 C 참조 · 12 시나리오, 같은 PV에서 sweep은 브라우저가 약 2 %p 낮고 광체 밖 유실은 ±1 %p 이내": "· numbers in COMPARE.md appendix C · over 12 scenarios at equal PV the browser sweep is ~2 %p lower and tracer outside ore agrees within ±1 %p",
+"폐색": "Plugging",
+"· 석고·철수산화물 침전, 점토 팽윤에 의한 투수계수 저하 없음": "· no conductivity loss from gypsum or iron-hydroxide precipitation or clay swelling",
+"이온흡착형 가정": "Ion-adsorption assumption",
+"· 가설 · 사면형 광상은 불포화·비폐색이라 패턴식 대상이 아니며, 포화대에 놓인 평탄 광상 사례 미확보": "· hypothesis · slope deposits are unsaturated and unconfined, hence not well-pattern targets; no documented case of a flat deposit in a saturated zone",
+"복원": "Restoration",
+"· 지하수 스윕만 · 역삼투 재주입·환원 재순환 없음 · 실제(Highland WY)는 15 PV 이상": "· groundwater sweep only · no RO reinjection or reductant recirculation · real cases (Highland, WY) took 15+ PV",
+"침출 0–{0} · 복원 {1}–{2} PV": "Leach 0–{0} · restore {1}–{2} PV",
+"두 방식 비교": "Comparing the two methods",
+"사면 중력식 = 불포화 사면에 위에서 아래로 한 번 흘려 넣는 방식 · 정호 패턴식 = 포화 피압대수층에서 주입정과 회수정으로 순환시키는 방식 · 각 탭에서 조정한 설정 그대로 두 모델을 끝까지 계산해 나란히 비교": "Slope gravity = a single top-down pass through an unsaturated slope · well pattern = circulation between injectors and producers in a saturated confined aquifer · both models run to completion with the settings from their tabs and are shown side by side",
+"현재 설정으로 두 방식 계산": "Run both with current settings",
+"계산 중… (수 초)": "Computing… (a few seconds)",
+"비고": "Notes",
+"미계산": "not run",
+"위 버튼으로 두 방식을 현재 설정 그대로 끝까지 계산": "Use the button above to run both methods to completion with the current settings",
+"회수율 (교환성 분율 기준)": "Recovery (of exchangeable fraction)",
+"사면식은 120일, 패턴식은 7 PV 시점 · 시간축이 다름": "Slope at 120 days, pattern at 7 PV · different time bases",
+"유실 (침출 중 최대 → 종료)": "Loss (peak during leach → end)",
+"{0} % (누적)": "{0} % (cumulative)",
+"사면식은 되돌릴 수 없는 유출, 패턴식은 복원 양수로 되끌어온 값": "Slope losses are irreversible; the pattern value is after restoration pumping pulls solution back",
+"수리학적 봉쇄": "Hydraulic containment",
+"불가능 (구조적)": "impossible (structural)",
+"미달 · 유선 {0}% 이탈": "not achieved · {0}% of streamlines escape",
+"유지": "achieved",
+"패턴식은 외곽 회수정 + bleed로 닫힌 포집 영역 형성 가능": "The pattern can close the capture zone with outer producers + bleed",
+"감시·안전 지표": "Monitoring / safety",
+"최소 안전율 {0}": "min. safety factor {0}",
+"감시정 초과 {0} / 12": "monitor exceedances {0} / 12",
+"다른 종류의 위험 · 사면은 산사태, 패턴은 지하수 유출": "Different hazards · landslide for the slope, groundwater excursion for the pattern",
+"정호·주입공 수": "Wells / injection holes",
+"{0} 공 (주입공)": "{0} (injection holes)",
+"{0} 공 (주입+회수)": "{0} (injectors + producers)",
+"패턴식은 회수정·감시정·펌프 추가 필요": "The pattern also needs producers, monitoring wells and pumps",
+"물 주입량": "Water injected",
+"패턴식은 순환수라 대부분 재사용 · 사면식은 일방 주입": "Pattern water circulates and is mostly reused · slope injection is one-way",
+"시약 (황산암모늄 환산)": "Reagent (as ammonium sulfate)",
+"{0} t (소비)": "{0} t (consumed)",
+"{0} t (순환 총량)": "{0} t (circulated)",
+"패턴식은 회수액을 재보충해 순환하므로 실제 소비는 이 값의 일부 · 모델은 매번 신액 주입으로 계산": "The pattern re-fortifies and recirculates, so actual consumption is a fraction of this · the model injects fresh solution every time",
+"소요 기간": "Duration",
+"{0} 일": "{0} d",
+"{0} 일 (1 PV ≈ {1}일)": "{0} d (1 PV ≈ {1} d)",
+"패턴식은 복원 2 PV 포함": "Pattern includes 2 PV of restoration",
+"모액 농도 (평균)": "PLS concentration (mean)",
+"{0} g/L (종료 시)": "{0} g/L (at end)",
+"현장 실적 0.3~2.0 g/L 범위 확인용": "For checking against the field range 0.3–2.0 g/L",
+"대상 면적": "Footprint",
+"규모가 다르므로 절대값보다 비율로 비교": "Different scales · compare ratios, not absolute values",
+"봉쇄": "Containment",
+"— 사면식은 배리어를 다 켜도 닫힌 포집 영역 형성 불가, 유출은 자연 차수층의 연속성에 좌우 · 패턴식은 현재 설정에서 {0}": "— the slope cannot form a closed capture zone even with every barrier on; leakage depends on the continuity of the natural aquiclude · with the current settings the pattern's {0}",
+"포집 영역 닫힘": "capture zone is closed",
+"포집 영역 열림 → 외곽을 회수정으로 두고 bleed를 양수로 상향": "capture zone is open → put producers on the outer ring and raise bleed above zero",
+"대가": "Cost",
+"— 그 봉쇄는 정호 {0}공과 상시 양수, 감시정 12공, 회수 뒤 복원 양수로 얻음 · 사면식은 주입공 {1}공과 도랑 하나": "— that containment is bought with {0} wells, continuous pumping, 12 monitoring wells and restoration pumping afterwards · the slope needs {1} injection holes and one trench",
+"지질 조건": "Geology",
+"— 패턴식은 포화·피압·투수성 대수층이 전제 · 이온흡착형 풍화토(가설, K≈0.16 m/d)에 적용하면 정호당 주입량이 허용 수위강하 안에서 약 19 m³/d로 제한, 1 PV에 약 700일 · 같은 기간을 맞추려면 정호를 5배 촘촘히 배치": "— the pattern presumes a saturated, confined, permeable aquifer · in ion-adsorption regolith (hypothetical, K ≈ 0.16 m/d) injection is capped near 19 m³/d per well within the allowed drawdown and 1 PV takes ~700 days · matching the schedule would need wells 5× closer",
+"한 문장": "In one line",
+"— 환경 차이는 시약이 아니라 수리지질에서 옴": "— the environmental difference comes from hydrogeology, not the reagent",
+"사면 중력식이 구조적으로 안 되는 이유": "Why slope gravity cannot contain",
+"광체가 불포화대 사면에 있어 압력으로 흐름 제어 불가 · 주입만 있고 양수가 없어 동수경사를 안쪽으로 걸 방법이 없음 · 회수는 사면 하단 집액구가 중력으로 받는 만큼 · IAEA가 드는 ISL 성립 조건(포화·피압·폐색) 중 어느 것도 미충족": "The ore sits in an unsaturated slope, so flow cannot be controlled by pressure · injection without pumping gives no way to impose an inward gradient · recovery is whatever the toe trench receives by gravity · none of the IAEA prerequisites for ISL (saturated, confined, sealed) is met",
+"정호 패턴식이 되는 조건과 비용": "What the well pattern needs, and what it costs",
+"포화 피압대수층, 투수계수 1 m/d 안팎, 상·하부 차수층 · 회수정을 바깥에 두고 양수량을 주입량보다 수 % 많게 유지하면 포집 영역 닫힘(Florence Copper PTF: 주입 4 · 회수 9) · 감시정 링에서 지시항목 2개 동시 초과 시 excursion 판정 · 조업 후 복원에 15 PV 이상 걸린 사례(Highland, WY)": "A saturated confined aquifer, conductivity around 1 m/d, upper and lower aquicludes · producers on the outside pumped a few % above injection close the capture zone (Florence Copper PTF: 4 injectors, 9 producers) · two indicators exceeded together at the monitoring ring is an excursion · post-mining restoration has taken 15+ PV (Highland, WY)",
+"fields 크기가 results.json 과 맞지 않음": "fields file size does not match results.json",
+"이 브라우저는 gzip 해제(DecompressionStream)를 지원하지 않음 · 최신 Chrome·Edge·Firefox·Safari 필요": "This browser lacks gzip decompression (DecompressionStream) · use a recent Chrome, Edge, Firefox or Safari",
+"침출 단계": "Leaching",
+"복원 · 지하수 스윕": "Restoration · groundwater sweep",
+"수두 RMS 차 {0} m": "Head RMS diff. {0} m",
+"추적자 R² {0}": "Tracer R² {0}",
+"OGS 프레임 {0} 일": "OGS frame {0} d",
+"재생 (Space)": "Play (Space)",
+"일시정지 (Space)": "Pause (Space)",
+"차이 (브라우저−OGS)": "Diff (browser−OGS)"
+};
+</script>
 <script>
 /* ═══════════════════════════════════════════════════════════
    공통 유틸 — DOM 빌더, 색 스케일, 차트, 카메라
    ═══════════════════════════════════════════════════════════ */
 const $=id=>document.getElementById(id);
+
+/* ═══ 언어 (KO/EN) ═══
+   화면 문구는 한국어가 원문이고, EN 표(파일 끝 I18N_EN)가 한국어 → 영어 대응을 갖는다.
+   · tr(s): 문자열 하나를 현재 언어로. 표에 없으면 원문 그대로.
+   · 숫자가 섞인 문장은 표의 키에 {0},{1}… 을 두면 정규식으로 맞춰 옮긴다.
+   · applyLang(root): DOM 을 훑어 한국어 텍스트 노드와 data-info/title/aria-label 속성을 바꾼다. 원문은 노드에 보관해 되돌릴 수 있다. */
+const I18N=(function(){
+  let lang='ko'; const EN={}; let tpl=[];
+  const hasKo=s=>/[가-힣]/.test(s);
+  const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  /* 템플릿은 고정 글자가 많은 것부터 시도 — '침출 0–{0} PV' 가 '침출 0–{0} · 복원 {1}–{2} PV' 를 가로채지 않게 */
+  function setTable(t){ Object.assign(EN,t); tpl=Object.keys(EN).filter(k=>/\{\d+\}/.test(k)).sort((a,b)=>b.replace(/\{\d+\}/g,'').length-a.replace(/\{\d+\}/g,'').length).map(k=>({re:new RegExp('^'+esc(k).replace(/\\\{(\d+)\\\}/g,'([\\s\\S]+?)')+'$'),en:EN[k]})); }
+  function tr(s){ if(lang==='ko'||s==null) return s; const t=String(s); if(!hasKo(t)) return t;
+    const k=t.trim(); if(EN[k]!==undefined) return t.replace(k,EN[k]);
+    for(const p of tpl){ const m=k.match(p.re); if(m) return t.replace(k,p.en.replace(/\{(\d+)\}/g,(_,i)=>tr(m[+i+1]))); }
+    return t; }
+  const ATTRS=['data-info','data-info-t','data-info-s','title','aria-label','placeholder'];
+  function applyLang(root){ root=root||document.body;
+    const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT,{acceptNode:n=>{
+      if(n.nodeType===1) return /^(SCRIPT|STYLE|CANVAS)$/.test(n.tagName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT;
+      return NodeFilter.FILTER_ACCEPT; }});
+    let n; while((n=w.nextNode())){
+      if(n.nodeType===3){ if(n.__ko===undefined){ if(!hasKo(n.nodeValue)) continue; n.__ko=n.nodeValue; } const v=lang==='ko'?n.__ko:tr(n.__ko); if(n.nodeValue!==v) n.nodeValue=v; }
+      else { for(const a of ATTRS){ if(!n.hasAttribute(a)) continue; const cur=n.getAttribute(a); if(!n.__koA) n.__koA={};
+          if(n.__koA[a]===undefined||(lang==='ko'&&cur!==n.__koA[a]&&hasKo(cur))){ if(!hasKo(cur)) continue; n.__koA[a]=cur; }
+          const v=lang==='ko'?n.__koA[a]:tr(n.__koA[a]); if(cur!==v) n.setAttribute(a,v); } } } }
+  function set(l){ lang=(l==='en')?'en':'ko'; document.documentElement.lang=lang; document.title=tr('ISL Studio — 현장용액채광 비교 시뮬레이터');
+    document.querySelectorAll('#lang button').forEach(b=>b.classList.toggle('on',b.dataset.lang===lang));
+    try{ localStorage.setItem('isl-studio-lang',lang); }catch(e){} applyLang(document.body); }
+  function init(){ let l=null; try{ l=new URLSearchParams(location.search).get('lang'); }catch(e){}
+    if(!l){ try{ l=localStorage.getItem('isl-studio-lang'); }catch(e){} }
+    if(!l) l=(navigator.language||'ko').toLowerCase().startsWith('ko')?'ko':'en'; set(l); }
+  return {tr, applyLang, set, init, setTable, get lang(){return lang}};
+})();
+const tr=I18N.tr; I18N.setTable(typeof I18N_EN==='object'?I18N_EN:{});
 const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
 const rgbStr=(r,g,b,a)=>'rgba('+(r*255|0)+','+(g*255|0)+','+(b*255|0)+','+(a===undefined?1:a.toFixed(2))+')';
 
@@ -461,7 +892,7 @@ const Pop=(function(){
   function fill(o){ const d=o.dataset; let body=d.info||'';
     if(d.infoFrom){ const src=document.getElementById(d.infoFrom); body=src?src.textContent:''; }
     if(!body&&!d.infoS) return false;
-    el.innerHTML=(d.infoT?'<div class="t">'+escA(d.infoT)+'</div>':'')+(body?'<div>'+escA(body)+'</div>':'')+(d.infoS?'<div class="s">출처 · '+escA(d.infoS)+'</div>':'');
+    el.innerHTML=(d.infoT?'<div class="t">'+escA(d.infoT)+'</div>':'')+(body?'<div>'+escA(body)+'</div>':'')+(d.infoS?'<div class="s">'+tr('출처')+' · '+escA(d.infoS)+'</div>':'');
     return true; }
   function place(o){ const r=o.getBoundingClientRect(), pw=el.offsetWidth, ph=el.offsetHeight, m=8;
     let x=r.left+r.width/2-pw/2; x=Math.max(m,Math.min(x,innerWidth-pw-m));
@@ -550,10 +981,10 @@ function drawChart(cv,cfg){
   c.textBaseline='middle';
   /* 범례 (패널 A) */
   c.font=SANS; let lx=L;
-  cfg.a.series.forEach(s=>{ c.fillStyle=s.color; rrect(c,lx,8,12,3,1.5); c.fill(); c.fillStyle=INK2; c.fillText(s.name,lx+16,10); lx+=16+c.measureText(s.name).width+14; });
+  cfg.a.series.forEach(s=>{ const nm=tr(s.name); c.fillStyle=s.color; rrect(c,lx,8,12,3,1.5); c.fill(); c.fillStyle=INK2; c.fillText(nm,lx+16,10); lx+=16+c.measureText(nm).width+14; });
   c.fillStyle=INK3; c.textAlign='right'; c.fillText('%',R,10); c.textAlign='left';
   /* 패널 B 제목 */
-  c.fillStyle=INK2; c.fillText(cfg.b.title+(cfg.b.unit?' ('+cfg.b.unit+')':''),L,B.top-11);
+  c.fillStyle=INK2; c.fillText(tr(cfg.b.title)+(cfg.b.unit?' ('+cfg.b.unit+')':''),L,B.top-11);
   function panel(P,spec,ticks,tfmt){
     const yOf=v=>P.top+P.h*(1-clamp((v-spec.min)/(spec.max-spec.min),0,1));
     c.lineWidth=1; c.font=MONO;
@@ -564,7 +995,7 @@ function drawChart(cv,cfg){
     (cfg.phases||[]).slice(0,-1).forEach(p=>{ const x=Math.round(xOf(p.x1))+.5; c.beginPath(); c.moveTo(x,P.top); c.lineTo(x,P.top+P.h); c.stroke(); });
     c.setLineDash([]);
     if(spec.ref){ const y=Math.round(yOf(spec.ref.v))+.5; c.strokeStyle='#8C6A5C'; c.setLineDash([4,3]); c.beginPath(); c.moveTo(L,y); c.lineTo(R,y); c.stroke(); c.setLineDash([]);
-      c.font=SANS; c.fillStyle='#B98C7A'; c.textAlign='right'; c.fillText(spec.ref.label,R-3,y+8); c.textAlign='left'; }
+      c.font=SANS; c.fillStyle='#B98C7A'; c.textAlign='right'; c.fillText(tr(spec.ref.label),R-3,y+8); c.textAlign='left'; }
     spec.series.forEach(s=>{ if(s.pts.length<2) return;
       c.strokeStyle=s.color; c.lineWidth=2; c.lineJoin='round'; c.lineCap='round'; c.beginPath();
       s.pts.forEach((p,n)=>{ const x=xOf(p[0]), y=yOf(p[1]); n?c.lineTo(x,y):c.moveTo(x,y); }); c.stroke(); });
@@ -584,7 +1015,7 @@ function drawChart(cv,cfg){
   ends(cfg.a,yA,v=>v.toFixed(0),A); ends(cfg.b,yB,vfmtB,B);
   /* x축: 단계 이름을 구간 가운데에 */
   c.font=SANS; c.fillStyle=INK3; c.textAlign='center';
-  (cfg.phases||[]).forEach(p=>c.fillText(p.label,xOf((p.x0+p.x1)/2),ch-8));
+  (cfg.phases||[]).forEach(p=>c.fillText(tr(p.label),xOf((p.x0+p.x1)/2),ch-8));
   c.textAlign='left';
   /* 마우스 오버: 십자선 + 값 상자 */
   if(chartHover===null) return;
@@ -598,8 +1029,8 @@ function drawChart(cv,cfg){
   [[cfg.a,yA,v=>v.toFixed(1)+' %'],[cfg.b,yB,v=>vfmtB(v)+(cfg.b.unit&&v<=90?' '+cfg.b.unit:'')]].forEach(([spec,yOf,f])=>spec.series.forEach(s=>{
     const q=near(s); if(!q) return;
     c.fillStyle=s.color; c.strokeStyle='#1a1d22'; c.lineWidth=2; c.beginPath(); c.arc(xOf(q[0]),yOf(q[1]),3.6,0,7); c.fill(); c.stroke();
-    rows.push([s.color,s.name,f(q[1])]); }));
-  const head=cfg.xunit==='PV'?p0[0].toFixed(2)+' PV':Math.round(p0[0])+' 일';
+    rows.push([s.color,tr(s.name),f(q[1])]); }));
+  const head=cfg.xunit==='PV'?p0[0].toFixed(2)+' PV':Math.round(p0[0])+' '+tr('일');
   c.font=SANS; const wv=rows.reduce((m,r)=>Math.max(m,c.measureText(r[1]).width+c.measureText(r[2]).width+34),c.measureText(head).width+18);
   const bw=Math.ceil(wv), bh=20+rows.length*15; let bx=x+10; if(bx+bw>cw-2) bx=x-10-bw; const by=A.top+2;
   c.fillStyle='rgba(18,20,24,.95)'; c.strokeStyle='#3A404A'; c.lineWidth=1; rrect(c,bx+.5,by+.5,bw,bh,5); c.fill(); c.stroke();
@@ -862,9 +1293,9 @@ function build3D(){
 }
 function applyClip(){ clipPlane.constant=S.clip*LY-LY/2; faceMesh.position.z=S.clip*LY-0.05; faceMesh.visible=S.clip<0.99; }
 
-const MODES=[{key:'lix',label:'침출액',lo:'없음',hi:'주입 농도',title:'침출액 (황산암모늄)'},
-             {key:'liquor',label:'모액',lo:'0 g/L',hi:'약 3 g/L',title:'모액 (용액 중 희토류)'},
-             {key:'sat',label:'포화도',lo:'건조',hi:'포화',title:'침출액 포화도'},
+const MODES=[{key:'lix',label:'침출제',lo:'없음',hi:'주입 농도',title:'침출제 (황산암모늄, lixiviant)'},
+             {key:'liquor',label:'모액',lo:'0 g/L',hi:'약 3 g/L',title:'모액 (PLS · 용액 중 희토류)'},
+             {key:'sat',label:'포화도',lo:'건조',hi:'포화',title:'용액 포화도'},
              {key:'prog',label:'침출 진행도',lo:'미침출',hi:'완전 침출',title:'침출 진행도'}];
 function fieldValue(c,m){ if(w[c]<=0) return 0;
   if(m===0) return Math.sqrt(Math.min(1,(Ml[c]/w[c])/Math.max(S.conc,1)));
@@ -919,20 +1350,20 @@ function advance(nSub){ const DT=0.05;
 }
 function buildControls(root){
   root.innerHTML='';
-  let sec=uiSection(root,'주입 조건','상·중·하 3개 구역을 5일 간격으로 순차 주입합니다. 0–35일 침출, 35–77일 정수(맑은 물로 잔류 모액을 밀어냄), 77–120일 배수·모니터링.');
+  let sec=uiSection(root,'주입 조건','상·중·하 3개 구역을 5일 간격으로 순차 주입 · 0–35일 침출, 35–77일 정수(맑은 물로 잔류 모액을 밀어냄), 77–120일 배수·모니터링');
   uiSlider(sec,{label:'주입강도',unit:'m/d',min:5,max:150,val:42,fmt:v=>(v/1000).toFixed(3),set:v=>{S.inj=v/1000},
-    info:'지표 주입공 구역에 하루 동안 넣는 물 높이. 시험채굴장 실측 주입속도는 0.0417 m/d.',src:'Wang et al., Minerals 2022'});
+    info:'지표 주입공 구역에 하루 동안 넣는 물 높이 · 시험채굴장 실측 주입속도 0.0417 m/d',src:'Wang et al., Minerals 2022'});
   uiSlider(sec,{label:'침출제 농도',unit:'mol/L',min:5,max:50,val:25,fmt:v=>(v/100).toFixed(2),set:v=>{S.conc=v*10},
-    info:'황산암모늄 (NH₄)₂SO₄ 농도. 0.20–0.25 mol/L가 경제적 범위로 보고됨.',src:'Wu et al. 2023'});
+    info:'침출제(lixiviant) = 주입하는 황산암모늄 (NH₄)₂SO₄ 용액 · 경제적 범위 0.20–0.25 mol/L',src:'Wu et al. 2023'});
   uiSlider(sec,{label:'교환성 희토류 품위',unit:'wt%',min:10,max:110,val:50,fmt:v=>(v/1000).toFixed(3),set:v=>{S.grade=v/1000; reset();},
-    info:'이온상(교환성) 품위 0.007–0.103 wt%. Y·중희토의 98 %는 점토·운모에 교환성으로, Ce의 94 %는 모나자이트(난용성)로 존재합니다. 바꾸면 계산이 처음부터 다시 시작됩니다.',src:'Wang 2022 · Cunningham 2025'});
-  sec=uiSection(root,'유출 억제 조치','켜고 끄며 회수율·유실률·안전율이 함께 움직이는 것을 비교합니다. 도액공·양수 차단정의 포집 효율 상향분은 물리 계산이 아니라 가정값입니다.');
+    info:'이온상(교환성) 품위 0.007–0.103 wt% · Y·중희토의 98 %는 점토·운모에 교환성으로, Ce의 94 %는 모나자이트(난용성)로 존재 · 바꾸면 계산을 처음부터 다시 시작',src:'Wang 2022 · Cunningham 2025'});
+  sec=uiSection(root,'유출 억제 조치','켜고 끄며 회수율·유실률·안전율의 변화를 비교 · 도액공·양수 차단정의 포집 효율 상향분은 물리 계산이 아닌 가정값');
   const refresh=()=>{ wallMesh.visible=S.cw; rebuildProps(); if(api.onLegend) api.onLegend(); };
-  uiToggle(sec,{label:'집액구',info:'사면 하단, 기반암 경계의 채널. 기본 조치라 끌 수 없습니다.',checked:true,disabled:true,set:()=>{}});
-  uiToggle(sec,{label:'도액공',info:'집액구 상부 수평공. 포집 효율을 올립니다(매개변수).',set:v=>{S.gh=v;refresh();}});
-  uiToggle(sec,{label:'하류 차수벽',info:'하단 경계 저투수 벽체. 격자 투수계수를 직접 낮춰 측면 유출을 막습니다.',set:v=>{S.cw=v;refresh();}});
-  uiToggle(sec,{label:'양수 차단정',info:'집액구 상류 회수정. 포집 효율을 추가로 올립니다(매개변수).',set:v=>{S.pb=v;refresh();}});
-  uiToggle(sec,{label:'기반암 차수층 결손',info:'중부 사면 기반암에 고투수 창(0.6 m/d)을 엽니다. 자연 차수층에만 의존할 때의 위험을 보여줍니다.',danger:true,set:v=>{S.gap=v;refresh();}});
+  uiToggle(sec,{label:'집액구',info:'사면 하단 기반암 경계의 채널 · 기본 조치라 끌 수 없음',checked:true,disabled:true,set:()=>{}});
+  uiToggle(sec,{label:'도액공',info:'집액구 상부 수평공 · 포집 효율 상향(매개변수)',set:v=>{S.gh=v;refresh();}});
+  uiToggle(sec,{label:'하류 차수벽',info:'하단 경계 저투수 벽체 · 격자 투수계수를 직접 낮춰 측면 유출 차단',set:v=>{S.cw=v;refresh();}});
+  uiToggle(sec,{label:'양수 차단정',info:'집액구 상류 회수정 · 포집 효율 추가 상향(매개변수)',set:v=>{S.pb=v;refresh();}});
+  uiToggle(sec,{label:'기반암 차수층 결손',info:'중부 사면 기반암에 고투수 창(0.6 m/d) 개방 · 자연 차수층에만 의존할 때의 위험',danger:true,set:v=>{S.gap=v;refresh();}});
 }
 function legendHTML(){
   const m=MODES[S.mode];
@@ -944,7 +1375,7 @@ function legendHTML(){
     it(sw('#7C776C'),'반풍화층','저품위 전이대 · 1.3 m/d'),
     it(sw('#454D58'),'기반암','자연 차수층(불투수) · 0.0004 m/d'),
     it(sw('#C98A2E'),'집액구','사면 하단 호박색 채널 · 모액 회수'),
-    it('<i style="background:linear-gradient(90deg,#1A1E24,#3FCFD6)"></i>','지표 발광','용액이 도달한 구역 (위에서 본 범위)') ];
+    it('<i style="background:linear-gradient(90deg,#1A1E24,#3FCFD6)"></i>','지표 발광','용액이 도달한 구역 · 위에서 본 범위') ];
   if(S.cw) faces.push(it(sw('#AEB6C0'),'하류 차수벽','저투수 벽체'));
   if(S.gap) faces.push(it(sw('#E2574C'),'기반암 결손','고투수 창 · 유출 경로'));
   let lines=[ it(ln('#3FD0E0'),'주입공','세로선 · 주입 중 청록 점멸'),
@@ -960,12 +1391,12 @@ function ui(){
   const rf=S.reRE/S.totalSr0*100, ls=S.inWater>0?S.lsWater/S.inWater*100:0, st=stored(), err=S.inWater-S.reWater-S.lsWater-st;
   let anyOre=false; for(let c=0;c<N;c++) if(mat[c]===1&&w[c]>0&&Ml[c]/w[c]>8){anyOre=true;break;}
   let ph,cap;
-  if(S.day<=0){ph='주입 전';cap='재생을 누르면 사면 상부 구역부터 침출액이 들어갑니다.';}
+  if(S.day<=0){ph='주입 전';cap='재생 시 사면 상부 구역부터 침출제 주입 시작';}
   else if(S.day<PHASE_LEACH){ ph='침출 단계 · '+(S.day<5?'상부':(S.day<10?'상·중부':'전'))+' 구역 주입';
-    cap=S.seep>2?'기반암 위에 정체수가 쌓이면서 침출액이 사면 아래로 흐릅니다.':(anyOre?'침출액이 표토를 지나 광체층(전풍화층)에 도달했습니다.':'침출액이 표토층을 빠르게 통과하는 중입니다. 표토 투수계수가 광체층의 약 3배입니다.'); }
-  else if(S.day<PHASE_PUSH){ ph='정수(頂水) 단계'; cap=S.liquor>0.2?'집액구에서 모액이 회수되고 있습니다. 시약 대신 물을 넣어 잔류 모액을 밀어냅니다.':'시약 주입을 멈추고 물만 넣어 지중에 남은 모액을 집액구 쪽으로 밀어냅니다.'; }
-  else { ph='배수 · 모니터링'; cap='주입을 끝내고 잔류수가 빠지는 구간입니다. 정체수가 줄면서 안전율이 다시 올라갑니다.'; }
-  const warn=[]; if(S.fs<1.1&&S.fs<90) warn.push('안전율이 허용치 1.1 아래입니다.'); if(ls>25) warn.push('주입량의 '+ls.toFixed(0)+'%가 회수되지 않고 빠져나갔습니다.'); if(S.gap) warn.push('기반암 차수층 결손이 켜져 있습니다.');
+    cap=S.seep>2?'기반암 위에 정체수 축적 · 침출제가 사면 아래로 측방 유동':(anyOre?'침출제가 표토를 지나 광체층(전풍화층)에 도달':'침출제가 표토층을 빠르게 통과 중 · 표토 투수계수는 광체층의 약 3배'); }
+  else if(S.day<PHASE_PUSH){ ph='정수(頂水) 단계'; cap=S.liquor>0.2?'집액구에서 모액(PLS) 회수 중 · 시약 대신 물을 넣어 잔류 모액을 밀어냄':'시약 주입 정지, 물만 주입 · 지중에 남은 모액을 집액구 쪽으로 밀어냄'; }
+  else { ph='배수 · 모니터링'; cap='주입 종료, 잔류수 배수 구간 · 정체수가 줄면서 안전율 회복'; }
+  const warn=[]; if(S.fs<1.1&&S.fs<90) warn.push('안전율 허용치(1.1) 미달'); if(ls>25) warn.push('주입량의 '+ls.toFixed(0)+'%가 회수되지 않고 유실'); if(S.gap) warn.push('기반암 차수층 결손 켜짐');
   const fsc=S.fs<1.1?'var(--alert)':(S.fs<1.3?'var(--liquor)':'var(--safe)');
   return {
     day:Math.floor(S.day), dayUnit:'일차', progress:Math.min(S.day,PHASE_END)/PHASE_END, phase:ph, caption:cap, warn:warn,
@@ -973,17 +1404,18 @@ function ui(){
     chart:{xmax:PHASE_END,xunit:'일',phases:[{x0:0,x1:PHASE_LEACH,label:'침출'},{x0:PHASE_LEACH,x1:PHASE_PUSH,label:'정수'},{x0:PHASE_PUSH,x1:PHASE_END,label:'배수'}],
       a:{min:0,max:100,series:[{name:'회수율',color:SER[0],pts:S.hist.map(h=>[h.d,h.rf])},{name:'유실률',color:SER[1],pts:S.hist.map(h=>[h.d,h.ls])}]},
       b:{title:'최소 안전율',unit:'',min:0,max:2,ref:{v:1.1,label:'허용 1.1'},series:[{name:'안전율',color:SER[2],pts:S.hist.map(h=>[h.d,h.fs])}]}},
-    chartHint:'안전율은 침출과 함께 떨어졌다가 배수 후 회복합니다.',
+    chartHint:'가로축 = 경과 일수 · 0–35일 침출, 35–77일 정수, 77–120일 배수 · 안전율은 침출과 함께 떨어졌다가 배수 후 회복',
+    dayInfo:'일차 = 주입 시작 후 경과 일수 · 0–35일 침출(시약 주입), 35–77일 정수(물 주입), 77–120일 배수·모니터링',
     details:[['모액 농도',S.liquor.toFixed(2),'g/L'],['누적 시약 (황산암모늄)',S.reagent.toFixed(1),'t'],['누적 주입',S.inWater.toFixed(0),'m³'],['침윤선 최고 상승',S.seep.toFixed(1),'m'],
       ['유실 · 지표 유출',S.lsRun.toFixed(0),'m³'],['유실 · 기반암 저면',S.lsBot.toFixed(0),'m³'],['유실 · 하류 측방',S.lsSide.toFixed(0),'m³'],['물질수지 잔차',Math.abs(err)<0.05?'0.00':err.toFixed(2),'m³']],
-    limits:['<b>화학</b> · 이온교환을 1차 속도식 하나로 대체. Kerr/Gapon 선택계수, 활동도, 음이온 차폐 없음.',
-      '<b>불포화 흐름</b> · Richards 방정식이 아닌 중력 지배 배수 근사. 모관 흡수 무시.',
-      '<b>모액 농도</b> · 현장 실적 0.3~2.0 g/L에 맞춰 속도상수를 낮췄습니다. 실내 컬럼(7~9 g/L)과 다릅니다.',
-      '<b>액/고 비</b> · 120일 기준 L/S≈0.16으로 실제 조업(0.5~1.0)보다 낮아 회수율이 낮게 나옵니다.',
-      '<b>사면</b> · 중앙 종단면 1개에서 Bishop 간이법 원호 탐색. 3차원 효과·인장균열·지진하중 없음.',
-      '<b>투수계수</b> · Yuan 2025 Table 1 상수. 점토 팽윤·신생 점토에 의한 K 변화(Zhang 2024) 미반영.',
-      '<b>스케일</b> · 100×60 m 단일 채굴장. 광역 영향은 단순 면적 환산이 아닙니다.'],
-    tlLabel:'0 – 120 일', tlTicks:[0,5,10,35,77,120], tlPhase1:PHASE_PUSH/PHASE_END, done:S.day>=PHASE_END
+    limits:['<b>화학</b> · 이온교환을 1차 속도식 하나로 대체 · Kerr/Gapon 선택계수, 활동도, 음이온 차폐 없음',
+      '<b>불포화 흐름</b> · Richards 방정식 대신 중력 지배 배수 근사 · 모관 흡수 무시',
+      '<b>모액 농도</b> · 현장 실적 0.3~2.0 g/L에 맞춰 속도상수를 낮춤 · 실내 컬럼(7~9 g/L)과 다름',
+      '<b>액/고 비</b> · 120일 기준 L/S≈0.16으로 실제 조업(0.5~1.0)보다 낮음 · 회수율이 낮게 나옴',
+      '<b>사면</b> · 중앙 종단면 1개에서 Bishop 간이법 원호 탐색 · 3차원 효과·인장균열·지진하중 없음',
+      '<b>투수계수</b> · Yuan 2025 Table 1 상수 · 점토 팽윤·신생 점토에 의한 K 변화(Zhang 2024) 미반영',
+      '<b>스케일</b> · 100×60 m 단일 채굴장 · 광역 영향은 단순 면적 환산이 아님'],
+    tlLabel:'침출 0–35 · 정수 35–77 · 배수 77–120 일', tlTicks:[0,5,10,35,77,120], tlPhase1:PHASE_PUSH/PHASE_END, done:S.day>=PHASE_END
   };
 }
 /* 헤드리스 배치 실행 (비교 탭) */
@@ -1028,9 +1460,12 @@ function genWells(){
   if(S.pattern==='5spot'){ const half=n*s/2;
     for(let i=0;i<=n;i++)for(let j=0;j<=n;j++) add(cx-half+i*s,cy-half+j*s,A);
     for(let i=0;i<n;i++)for(let j=0;j<n;j++) add(cx-half+(i+0.5)*s,cy-half+(j+0.5)*s,Bt);
-  } else if(S.pattern==='7spot'){ const R=n*s*0.92;
-    for(let j=-n-1;j<=n+1;j++)for(let i=-n-2;i<=n+2;i++){ const x=cx+(i+0.5*j)*s, y=cy+j*s*0.8660; if(Math.hypot(x-cx,y-cy)>R) continue;
-      const cen=(((i+2*j)%3)+3)%3===0; add(x,y,cen?Bt:A); }
+  } else if(S.pattern==='7spot'){ const R=Math.max(n*s*0.92,s*1.05), pts=[];
+    for(let j=-n-1;j<=n+1;j++)for(let i=-n-2;i<=n+2;i++){ const x=cx+(i+0.5*j)*s, y=cy+j*s*0.8660, r=Math.hypot(x-cx,y-cy); if(r>R) continue;
+      pts.push({x:x,y:y,r:r,cen:(((i+2*j)%3)+3)%3===0}); }
+    /* 육각 격자의 세 부분격자 중 가장 바깥 껍질이 속한 쪽을 A(켜면 회수정)로 — 규모와 무관하게 외곽이 회수정 */
+    const rmax=Math.max.apply(null,pts.map(p=>p.r)), shell=pts.filter(p=>p.r>rmax-0.01*s), cenOut=2*shell.filter(p=>p.cen).length>=shell.length;
+    pts.forEach(p=>add(p.x,p.y,(p.cen===cenOut)?A:Bt));
   } else { const rows=2*n+1, half=n*s/2, rs=s*0.6;
     for(let j=0;j<rows;j++){ const t=(j%2===0)?A:Bt, yy=cy-(rows-1)*rs/2+j*rs; for(let i=0;i<=n;i++) add(cx-half+i*s,yy,t); } }
   const inj=wells.filter(q=>q.type==='I'), prod=wells.filter(q=>q.type==='P');
@@ -1051,7 +1486,7 @@ function genWells(){
   for(let k=0;k<3;k++){ const f=(k+0.5)/3;
     [[rx0+(rx1-rx0)*f,ry0],[rx0+(rx1-rx0)*f,ry1],[rx0,ry0+(ry1-ry0)*f],[rx1,ry0+(ry1-ry0)*f]].forEach(p=>{ const [i,j]=cellOf(clamp(p[0],2,LX-2),clamp(p[1],2,LY-2)); monitors.push({x:p[0],y:p[1],i:i,j:j,streak:0,alarm:false,val:0}); }); }
   S.pvVol=PHI*B*(bounds.x1-bounds.x0)*(bounds.y1-bounds.y0);
-  if(!S.restoring) S.pvDays=S.pvVol/Math.max(totalInjNominal,1e-6);
+  if(!S.restoring) S.pvDays=S.pvVol/totalProd;   /* 1 PV = 양수로 공극체적만큼 퍼내는 시간 (시간축 S.pv 와 같은 기준) */
 }
 function solveHead(){
   const T=S.K*B, src=new Float32Array(N);
@@ -1106,7 +1541,7 @@ function reset(){
   const molPerM3=(S.grade/100)*1900/0.330*2; let tot=0;
   for(let c=0;c<N;c++){ Cl[c]=0; Cr[c]=0; const s=ore[c]?molPerM3*B*DX*DY:0; Sr[c]=s; Sr0[c]=s; tot+=s; }
   S.totalSr0=Math.max(tot,1e-9); monitors.forEach(m=>{m.streak=0;m.alarm=false;m.val=0;});
-  if(disp) disp.fill(0); sampleClock=0; acc=0; rebuildBlock(); rebuildWellVisuals();
+  if(disp) disp.fill(0); sampleClock=0; acc=0; rebuildBlock(); rebuildWellVisuals(); if(api.onLegend) api.onLegend();
 }
 function step(dt){
   const cInj=S.restoring?0:S.conc, KR=S.KR, fB=DY*B*dt, fB2=DX*B*dt;
@@ -1223,25 +1658,35 @@ function drawSection(){
   faceTex.needsUpdate=true;
 }
 /* ── OGS 참조해 연동 ── */
-let REF=null;
-function loadReference(meta,buf){ if(meta.nx!==NX||meta.ny!==NY){ alert('격자 크기 불일치: 참조해 '+meta.nx+'×'+meta.ny+' vs 브라우저 '+NX+'×'+NY); return false; }
-  if(Math.abs(meta.domain_m-LX)>1e-6){ alert('도메인 크기 불일치: 참조해 '+meta.domain_m+' m vs 브라우저 '+LX.toFixed(1)+' m. 같은 시나리오로 다시 계산하십시오.'); return false; }
+let REF=null, REFSIG=null;
+/* 불러온 참조해의 시나리오와 현재 설정을 견주기 위한 서명 */
+const SIGL={pattern:'패턴',spacing:'정호 간격',n:'패턴 규모',outer:'외곽 회수정',Q:'주입량',bleed:'bleed',K:'투수계수',grad:'동수경사',aL:'αL',aT:'αT'};
+function sigNow(){ return {pattern:S.pattern,spacing:S.spacing,n:S.n,outer:S.outerProd,Q:S.qEff,bleed:S.bleed,K:S.K,grad:S.grad,aL:S.aL,aT:S.aT}; }
+function sigOf(meta){ const sc=meta.scenario||{}, w=sc.wells||{}, aq=sc.aquifer||{};
+  return {pattern:w.pattern,spacing:w.spacing_m,n:w.n,outer:w.outer_producers,Q:w.Q_inj_m3_per_d,bleed:w.bleed,K:aq.K_m_per_d,grad:aq.regional_gradient,aL:aq.dispersivity_L_m,aT:aq.dispersivity_T_m}; }
+function refMismatch(){ if(!REF||!REFSIG) return []; const now=sigNow(), out=[];
+  for(const k in REFSIG){ const a=REFSIG[k], b=now[k]; if(a===undefined||a===null||b===undefined) continue;
+    const diff=(typeof a==='number')?Math.abs(a-b)>Math.max(1e-6,Math.abs(a)*1e-3):a!==b; if(diff) out.push(tr(SIGL[k])); }
+  if(S.grade>0.0101) out.push(tr('교환성 품위(반응 켜짐)')); return out; }
+function loadReference(meta,buf){ if(meta.nx!==NX||meta.ny!==NY){ alert(tr('격자 크기 불일치')+': '+meta.nx+'×'+meta.ny+' vs '+NX+'×'+NY); return false; }
+  if(Math.abs(meta.domain_m-LX)>1e-6){ alert(tr('도메인 크기 불일치')+': '+meta.domain_m+' m vs '+LX.toFixed(1)+' m · '+tr('같은 시나리오로 다시 계산할 것')); return false; }
   if(meta.mass_balance){ const r=meta.mass_balance.retained_over_injected, pc=meta.mass_balance.producer_c_max; const rl=r[r.length-1], pl=pc[pc.length-1];
-    if(rl>0.95||pl>1.2) alert('주의: 이 참조해는 물질수지가 의심스럽습니다.\n잔존/주입 = '+rl.toFixed(2)+' (파과 후 0.95 미만이어야 함), 회수정 최대 농도 = '+pl.toFixed(2)+' (1.2 이하여야 함).\n회수정이 용질을 빼지 않는 결함(FullUpwind 또는 보존형)일 수 있습니다. 불러오기는 진행합니다.'); }
-  else alert('참고: 이 참조해에는 물질수지 정보가 없습니다(구버전 run_case.py). 결과를 신뢰하기 전에 잔존/주입 비를 확인하십시오.');
-  REF={meta:meta,arr:new Float32Array(buf)}; S.useRef=true; return true; }
+    if(rl>0.95||pl>1.2) alert(tr('주의: 이 참조해는 물질수지가 의심스러움')+'\n'+tr('잔존/주입')+' = '+rl.toFixed(2)+' ('+tr('파과 후 0.95 미만이어야 함')+'), '+tr('회수정 최대 농도')+' = '+pl.toFixed(2)+' ('+tr('1.2 이하여야 함')+')\n'+tr('회수정이 용질을 빼지 않는 결함(FullUpwind 또는 보존형)일 수 있음 · 불러오기는 진행')); }
+  else alert(tr('참고: 이 참조해에는 물질수지 정보가 없음(구버전 run_case.py) · 결과를 신뢰하기 전에 잔존/주입 비를 확인할 것'));
+  REF={meta:meta,arr:new Float32Array(buf),tEnd:meta.times_days[meta.times_days.length-1]}; REFSIG=sigOf(meta); S.useRef=true; return true; }
 /* 참조해 필드 해제: v1 = Float32 [T][2][N] 그대로, v2 = gzip(수두 f32[N] + 추적자 u16[T][N]) → v1 배열로 펼침 */
 async function decodeFields(meta,raw){
   const ff=meta.fields_format||{}; if(ff.version!==2) return raw;
-  const N=meta.nx*meta.ny, T=meta.times_days.length, want=N*4+T*N*2, u8=new Uint8Array(raw,0,Math.min(2,raw.byteLength));
+  const N=meta.nx*meta.ny, T=meta.times_days.length, idx=ff.head_index||null, H=idx?Math.max.apply(null,idx)+1:1, want=N*4*H+T*N*2, u8=new Uint8Array(raw,0,Math.min(2,raw.byteLength));
   let bytes=raw;
   /* 서버가 Content-Encoding: gzip 으로 보내면 브라우저가 이미 풀어 준다 — 크기가 아직 다르고 gzip 표지(1f 8b)가 있을 때만 해제 */
   if(ff.gzip!==false&&raw.byteLength!==want&&u8[0]===0x1f&&u8[1]===0x8b){
-    if(typeof DecompressionStream==='undefined') throw new Error('이 브라우저는 gzip 해제(DecompressionStream)를 지원하지 않습니다. 최신 Chrome·Edge·Firefox·Safari를 쓰십시오');
+    if(typeof DecompressionStream==='undefined') throw new Error(tr('이 브라우저는 gzip 해제(DecompressionStream)를 지원하지 않음 · 최신 Chrome·Edge·Firefox·Safari 필요'));
     bytes=await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); }
-  if(bytes.byteLength!==want) throw new Error('fields 크기가 results.json 과 맞지 않습니다');
-  const head=new Float32Array(bytes,0,N), tr=new Uint16Array(bytes,N*4,T*N), out=new Float32Array(T*2*N), sc=ff.tracer_scale, of=ff.tracer_offset;
-  for(let k=0;k<T;k++){ out.set(head,k*2*N); const o=(k*2+1)*N, b=k*N; for(let c=0;c<N;c++) out[o+c]=tr[b+c]*sc+of; }
+  if(bytes.byteLength!==want) throw new Error(tr('fields 크기가 results.json 과 맞지 않음'));
+  /* 수두장 H개(침출·복원마다 하나) + 16비트 추적자 [T][N] → float32 [T][2][N] */
+  const heads=new Float32Array(bytes,0,N*H), tr16=new Uint16Array(bytes,N*4*H,T*N), out=new Float32Array(T*2*N), sc=ff.tracer_scale, of=ff.tracer_offset;
+  for(let k=0;k<T;k++){ const hi=idx?idx[k]:0; out.set(heads.subarray(hi*N,(hi+1)*N),k*2*N); const o=(k*2+1)*N, b=k*N; for(let c=0;c<N;c++) out[o+c]=tr16[b+c]*sc+of; }
   return out.buffer;
 }
 function refFrame(day){ const t=REF.meta.times_days; let k=0; while(k<t.length-1&&t[k+1]<=day) k++; return k; }
@@ -1251,6 +1696,32 @@ function refCompare(){ if(!REF) return null; const k=refFrame(S.day), hh=refFiel
   for(let c=0;c<N;c++){ const d=h[c]-hh[c]; se+=d*d; n++; const x=Cl[c]/Math.max(S.conc,1), y=cc[c]; sx+=x; sy+=y; sxx+=x*x; syy+=y*y; sxy+=x*y; }
   const r=(n*sxy-sx*sy)/Math.sqrt(Math.max((n*sxx-sx*sx)*(n*syy-sy*sy),1e-12));
   return {frameDay:REF.meta.times_days[k], hRms:Math.sqrt(se/n), cR2:r*r, sweep:REF.meta.sweep_frac[k], outside:REF.meta.tracer_outside_ore_frac[k]}; }
+/* 우측 패널 "참조해 비교": 브라우저 · OGS · 차이 평면도 세 장을 한 캔버스에 */
+const cmpOff=document.createElement('canvas'); cmpOff.width=NX; cmpOff.height=NY;
+function drawRefCompare(cv,statEl){
+  if(!REF){ return; }
+  const cw=cv.clientWidth, chh=Math.round((cw-8)/3)+22; if(cw<60) return;
+  const dpr=Math.min(devicePixelRatio||1,2); if(cv.width!==Math.round(cw*dpr)||cv.height!==Math.round(chh*dpr)){ cv.width=Math.round(cw*dpr); cv.height=Math.round(chh*dpr); cv.style.height=chh+'px'; }
+  const c=cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,cw,chh); c.imageSmoothingEnabled=false;
+  const k=refFrame(S.day), isH=S.mode===3, ref=refField(k,isH?0:1), inRange=S.day<=REF.tEnd+1e-6;
+  const br=new Float32Array(N); let mn=1e9,mx=-1e9;
+  for(let i=0;i<N;i++){ br[i]=isH?h[i]:clamp(Cl[i]/Math.max(S.conc,1),0,1.2); if(isH){ if(h[i]<mn) mn=h[i]; if(h[i]>mx) mx=h[i]; if(ref[i]<mn) mn=ref[i]; if(ref[i]>mx) mx=ref[i]; } }
+  const rg=Math.max(mx-mn,1e-9), pw=Math.floor((cw-8)/3), ph=pw, y0=16;
+  const oc=cmpOff.getContext('2d'), img=oc.createImageData(NX,NY);
+  const put=(get,x)=>{ const d=img.data; for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const v=get(i+j*NX), o=((NY-1-j)*NX+i)*4; d[o]=v[0]*255; d[o+1]=v[1]*255; d[o+2]=v[2]*255; d[o+3]=255; }
+    oc.putImageData(img,0,0); c.drawImage(cmpOff,0,0,NX,NY,x,y0,pw,ph);
+    c.strokeStyle='rgba(240,214,150,0.7)'; c.lineWidth=1; c.strokeRect(x+bounds.x0/LX*pw,y0+(1-bounds.y1/LY)*ph,(bounds.x1-bounds.x0)/LX*pw,(bounds.y1-bounds.y0)/LY*ph); };
+  const base=[0.19,0.21,0.25];
+  const col=v=>{ if(isH){ const t=(v-mn)/rg; return ramp('head',t); } const t=Math.sqrt(clamp(v,0,1)); const r=ramp('lix',t); return [base[0]+(r[0]-base[0])*t,base[1]+(r[1]-base[1])*t,base[2]+(r[2]-base[2])*t]; };
+  const dcol=d=>{ const a=clamp(Math.abs(d)/(isH?0.5:0.3),0,1); return d>0?[0.16+0.76*a,0.18+0.20*a,0.22]:[0.16,0.20+0.45*a,0.24+0.66*a]; };
+  put(i=>col(br[i]),4); put(i=>col(ref[i]),4+pw+2); put(i=>dcol(br[i]-ref[i]),4+2*(pw+2));
+  c.font='10.5px -apple-system,"Segoe UI","Malgun Gothic",sans-serif'; c.fillStyle='#A4A8B0'; c.textBaseline='middle';
+  [tr('브라우저'),'OGS',tr('차이 (브라우저−OGS)')].forEach((t,i)=>c.fillText(t,4+i*(pw+2),8));
+  if(!inRange){ c.fillStyle='rgba(20,22,26,.75)'; c.fillRect(4+pw+2,y0,pw,ph); c.fillStyle='#E7E4DD'; c.textAlign='center'; c.fillText(tr('데이터 범위 밖'),4+pw+2+pw/2,y0+ph/2); c.textAlign='left'; }
+  if(statEl){ const st=S.refStats, mm=refMismatch();
+    statEl.innerHTML=(st?'<span>'+tr('OGS 프레임')+' '+st.frameDay.toFixed(0)+' '+tr('일')+'</span><span>'+tr('수두 RMS 차')+' '+st.hRms.toFixed(2)+' m</span><span>'+tr('추적자 R²')+' '+st.cR2.toFixed(3)+'</span>':'<span>'+tr('데이터 범위 밖')+'</span>')+
+      (mm.length?'<div class="mis">'+tr('참조해 시나리오와 현재 설정이 다름')+': '+mm.join(', ')+'</div>':''); }
+}
 function exportScenario(){
   const sc={schema_version:'0.1',mode:'pattern',
     grid:{nx:NX,ny:NY,domain_m:+LX.toFixed(4),aquifer_thickness_m:B},
@@ -1265,18 +1736,20 @@ function exportScenario(){
 function exportSnapshot(){ download('browser_snapshot_day'+Math.round(S.day)+'.json',JSON.stringify({day:S.day,nx:NX,ny:NY,DX:DX,domain_m:LX,conc:S.conc,h:Array.from(h),Cl:Array.from(Cl)})); }
 function download(name,text){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:'application/json'})); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); }
 
-const MODES=[{key:'lix',label:'침출액',lo:'없음',hi:'주입 농도',title:'침출액 (추적자)'},
-             {key:'liquor',label:'모액',lo:'0 g/L',hi:'약 3 g/L',title:'모액 (용액 중 회수 대상)'},
+const MODES=[{key:'lix',label:'침출제',lo:'없음',hi:'주입 농도',title:'침출제 (lixiviant · 추적자)'},
+             {key:'liquor',label:'모액',lo:'0 g/L',hi:'약 3 g/L',title:'모액 (PLS · 용액 중 회수 대상)'},
              {key:'prog',label:'침출 진행도',lo:'미침출',hi:'완전 침출',title:'침출 진행도 (sweep)'},
              {key:'head',label:'수두',lo:'낮음',hi:'높음',title:'수두 (압력면)'}];
 function fieldValue(c,m){ if(m===0) return Math.sqrt(Math.min(1,Cl[c]/Math.max(S.conc,1))); if(m===1) return Math.sqrt(Math.min(1,Cr[c]*RE_MOLAR/3.0));
   if(m===2) return Sr0[c]>0?1-Sr[c]/Sr0[c]:0; return (h[c]-S.hMin)/Math.max(S.hMax-S.hMin,1e-9); }
 function tick(){
   const key=MODES[S.mode].key;
-  if(S.useRef&&REF){ const k=refFrame(S.day), hh=refField(k,0), cc=refField(k,1); let mn=1e9,mx=-1e9; for(let c=0;c<N;c++){ if(hh[c]<mn) mn=hh[c]; if(hh[c]>mx) mx=hh[c]; }
+  const refMode=(S.mode===0||S.mode===3), refIn=REF&&S.day<=REF.tEnd+1e-6;
+  S.refNote=!(S.useRef&&REF)?'':(!refMode?'이 표시 항목은 OGS에 없음 · 침출제·수두에서만 OGS 표시':(!refIn?'OGS 데이터 범위 밖 · 브라우저 결과 표시':'3D 면 = OGS 참조해'));
+  if(S.useRef&&REF&&refMode&&refIn){ const k=refFrame(S.day), hh=refField(k,0), cc=refField(k,1); let mn=1e9,mx=-1e9; for(let c=0;c<N;c++){ if(hh[c]<mn) mn=hh[c]; if(hh[c]>mx) mx=hh[c]; }
     for(let c=0;c<N;c++){ const t=(S.mode===3)?(hh[c]-mn)/Math.max(mx-mn,1e-9):Math.sqrt(clamp(cc[c],0,1)); disp[c]+=(t-disp[c])*0.2; }
     S.refStats=refCompare(); }
-  else { for(let c=0;c<N;c++){ const t=clamp(fieldValue(c,S.mode),0,1); disp[c]+=(t-disp[c])*0.2; } S.refStats=REF?refCompare():null; }
+  else { for(let c=0;c<N;c++){ const t=clamp(fieldValue(c,S.mode),0,1); disp[c]+=(t-disp[c])*0.2; } S.refStats=(REF&&refIn)?refCompare():null; }
   const ctx=topCtx, W=topCv.width, H=topCv.height, cw=W/NX, ch=H/NY;
   ctx.fillStyle='#7A6947'; ctx.fillRect(0,0,W,H);
   for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){ const c=ID(i,j), v=disp[c]; if(ore[c]){ ctx.fillStyle='#8E7A55'; ctx.fillRect(i*cw,H-(j+1)*ch,cw+0.6,ch+0.6); }
@@ -1295,30 +1768,31 @@ function advance(nSub){ for(let n=0;n<nSub;n++){ if(S.pv>=S.PV_END) break; step(
 function rebuild(){ const p=S.restoring; S.restoring=false; genWells(); if(p){ S.restoring=true; genWells(); } solveHead(); rebuildWellVisuals(); if(api.onLegend) api.onLegend(); }
 function buildControls(rootEl){
   rootEl.innerHTML=''; const C={};
-  let sec=uiSection(rootEl,'정호 배치','정호 간격이 가장 큰 설계 변수입니다. Honeymoon(2026)은 좁은 패턴 대신 50–60 m 광역 간격을 시험 중입니다.');
+  let sec=uiSection(rootEl,'정호 배치','정호 간격이 가장 큰 설계 변수 · Honeymoon(2026)은 좁은 패턴 대신 50–60 m 광역 간격을 시험 중');
   C.pat=uiSegment(sec,{val:'5spot',options:[{v:'5spot',label:'5-spot'},{v:'7spot',label:'7-spot'},{v:'line',label:'Line drive'}],set:v=>{S.pattern=v; reset();}});
   C.spacing=uiSlider(sec,{label:'정호 간격',unit:'m',min:20,max:80,val:50,step:5,fmt:v=>String(v),set:v=>{S.spacing=v; reset();},
-    info:'인접 정호 사이 거리. 문헌 범위 15–61 m.',src:'SME Mining Reference Handbook Ch.19 · Boss Energy Honeymoon EKT1 60 m, EKT2 50 m (2026)'});
+    info:'인접 정호 사이 거리 · 문헌 범위 15–61 m',src:'SME Mining Reference Handbook Ch.19 · Boss Energy Honeymoon EKT1 60 m, EKT2 50 m (2026)'});
   C.n=uiSlider(sec,{label:'패턴 규모',unit:'',min:1,max:3,val:2,fmt:v=>v+'×'+v,set:v=>{S.n=v; reset();},
-    info:'패턴 반복 수. 5-spot 2×2이면 주입정 4공 · 회수정 9공.'});
-  C.outer=uiToggle(sec,{label:'외곽 정호 = 회수정',info:'켜면 회수정이 바깥을 둘러쌉니다(Florence 방식, 주입 4 : 회수 9). 끄면 주입정이 바깥에 와서 봉쇄가 어려워집니다.',checked:true,set:v=>{S.outerProd=v; reset();}});
-  sec=uiSection(rootEl,'운전 조건','회수량을 주입량보다 몇 % 많게(bleed) 유지하면 패턴 안쪽으로 동수경사가 생겨 침출액이 갇힙니다. 음수로 내리면 주입이 양수를 초과해 밖으로 밀려납니다.');
+    info:'패턴 반복 수 · 5-spot 2×2이면 주입정 4공 · 회수정 9공'});
+  C.outer=uiToggle(sec,{label:'외곽 정호 = 회수정',info:'켜면 가장 바깥 고리가 회수정(Florence Copper 방식 · 5-spot 2×2에서 주입 4 : 회수 9) · 끄면 주입정이 바깥에 와서 봉쇄가 어려움',checked:true,set:v=>{S.outerProd=v; reset();}});
+  sec=uiSection(rootEl,'운전 조건','회수량을 주입량보다 몇 % 많게(bleed) 유지 → 패턴 안쪽으로 동수경사, 침출제 봉쇄 · 음수면 주입이 양수를 초과해 밖으로 밀려남');
   C.Q=uiSlider(sec,{label:'주입량 / 정호',unit:'m³/d',min:30,max:300,val:100,step:10,fmt:v=>String(v),set:v=>{S.Qinj=v; rebuild();},
-    info:'주입정 1공당 유량. 투수계수로 정해지는 Thiem 상한을 넘으면 자동으로 잘립니다(상세 지표에 표시).'});
+    info:'주입정 1공당 유량 · 투수계수로 정해지는 Thiem 상한을 넘으면 자동 제한(상세 지표에 표시)'});
   C.bleed=uiSlider(sec,{label:'Bleed',unit:'%',min:-15,max:15,val:5,fmt:v=>(v>0?'+':'')+v,set:v=>{S.bleed=v/100; rebuild();},
-    info:'총 양수량 = 총 주입량 × (1 + bleed). 수 % 수준이 표준 운영이며, 음수면 봉쇄가 깨집니다.',src:'IAEA Nuclear Energy Series NF-T-1.4 (2016)'});
-  C.conc=uiSlider(sec,{label:'침출제 농도',unit:'mol/L',min:5,max:50,val:25,fmt:v=>(v/100).toFixed(2),set:v=>{S.conc=v*10}});
+    info:'총 양수량 = 총 주입량 × (1 + bleed) · 초과분은 주변 지하수가 안쪽으로 흘러들어 채움(수리학적 봉쇄) · 수 %가 표준 운영, 음수면 봉쇄 실패',src:'IAEA Nuclear Energy Series NF-T-1.4 (2016)'});
+  C.conc=uiSlider(sec,{label:'침출제 농도',unit:'mol/L',min:5,max:50,val:25,fmt:v=>(v/100).toFixed(2),set:v=>{S.conc=v*10},
+    info:'침출제(lixiviant) = 주입 용액 · 회수한 용액은 모액(PLS)'});
   C.grade=uiSlider(sec,{label:'교환성 품위',unit:'wt%',min:10,max:110,val:50,fmt:v=>(v/1000).toFixed(3),set:v=>{S.grade=v/1000; reset();},
-    info:'OGS 참조해와 비교할 때는 최소로 내려 화학 반응을 끄십시오. 참조해는 반응 없는 추적자만 풀었습니다.'});
-  sec=uiSection(rootEl,'대수층','IAEA 경험칙 — 투수계수 1 m/d 이상이면 유리하고, 0.1 m/d 정도 이하에서는 ISL이 성립하지 않습니다.');
+    info:'OGS 참조해와 비교할 때는 최소로 내려 화학 반응 끔 · 참조해는 반응 없는 추적자만 계산'});
+  sec=uiSection(rootEl,'대수층','IAEA 경험칙 · 투수계수 1 m/d 이상 유리, 0.1 m/d 이하는 ISL 불성립');
   const kSl=C.K=uiSlider(sec,{label:'투수계수',unit:'m/d',min:-130,max:70,val:0,fmt:v=>Math.pow(10,v/100).toFixed(2),set:v=>{S.K=Math.pow(10,v/100); rebuild();},
-    info:'로그 눈금 슬라이더(0.05–5 m/d). 낮추면 같은 주입량을 넣기 위한 수두 상승이 커지고 주입량 상한이 줄어듭니다.',src:'IAEA NF-T-1.4 경험칙'});
+    info:'로그 눈금(0.05–5 m/d) · 낮추면 같은 주입량에 필요한 수두 상승이 커지고 주입량 상한 감소',src:'IAEA NF-T-1.4 경험칙'});
   C.grad=uiSlider(sec,{label:'지역 동수경사',unit:'',min:0,max:20,val:2,fmt:v=>(v/1000).toFixed(3),set:v=>{S.grad=v/1000; rebuild();},
-    info:'패턴과 무관한 배경 지하수 흐름의 경사(−x 방향). 클수록 봉쇄에 더 큰 bleed가 필요합니다.'});
+    info:'패턴과 무관한 배경 지하수 흐름의 경사(−x 방향) · 클수록 봉쇄에 더 큰 bleed 필요'});
   C.aL=uiSlider(sec,{label:'종분산도 αL',unit:'m',min:0,max:50,val:20,fmt:v=>(v/10).toFixed(1),set:v=>{S.aL=v/10; rebuild();},
-    info:'목표값입니다. 브라우저 격자는 풍상차분 수치분산(≈Δx/2, 약 1.8 m)을 이미 갖고 있어 목표에서 그만큼 뺀 물리 분산만 더합니다. 내보내는 scenario.json에는 목표값이 실립니다.',src:'참조해 기본 αL 2 m, αT 0.2 m'});
+    info:'목표값 · 브라우저 격자는 풍상차분 수치분산(≈Δx/2, 약 1.8 m)을 이미 가지므로 목표에서 그만큼 뺀 물리 분산만 추가 · scenario.json에는 목표값 기록',src:'참조해 기본 αL 2 m, αT 0.2 m'});
   C.aT=uiSlider(sec,{label:'횡분산도 αT',unit:'m',min:0,max:10,val:2,fmt:v=>(v/10).toFixed(1),set:v=>{S.aT=v/10; rebuild();}});
-  const og=uiSection(rootEl,'OGS 참조해','저장소에 OpenGeoSys 참조해 12개(3 패턴 × 간격 30·50 m × bleed +5·−10 %)가 들어 있습니다. 목록에서 고르면 화면 설정을 그 케이스에 맞추고 참조해를 겹칩니다. 다른 시나리오는 scenario.json을 내보내 OGS로 계산한 뒤 파일을 직접 선택하십시오.');
+  const og=uiSection(rootEl,'OGS 참조해','같은 시나리오를 OpenGeoSys(유한요소)로 미리 계산해 둔 결과 · 화면의 브라우저 근사와 겹쳐 차이를 확인 · 저장소에 12개(3 패턴 × 간격 30·50 m × bleed +5·−10 %) 내장 · 다른 시나리오는 scenario.json을 내보내 OGS로 계산한 뒤 파일 선택');
   const sel=document.createElement('select'); sel.className='refsel'; sel.setAttribute('aria-label','참조해 케이스');
   sel.innerHTML='<option>목록 불러오는 중…</option>'; sel.disabled=true; og.appendChild(sel);
   const bar=document.createElement('div'); bar.className='btnrow';
@@ -1335,23 +1809,23 @@ function buildControls(rootEl){
       const meta=await r1.json(), buf=await decodeFields(meta,await r2.arrayBuffer());
       if(loadReference(meta,buf)){ refTog.checked=true; fname.textContent=c.label+' · '+(c.bytes/1e6).toFixed(1)+' MB'; }
     }catch(e){
-      alert('참조해를 가져오지 못했습니다 ('+e.message+').\n\n이 기능은 저장소 폴더 구조가 그대로인 상태에서 웹으로 열었을 때 동작합니다(GitHub Pages 등).\nHTML 파일만 따로 열었다면 "파일 선택…"으로 results.json 과 fields 파일을 직접 고르십시오.');
+      alert(tr('참조해를 가져오지 못함')+' ('+e.message+')\n\n'+tr('이 기능은 저장소 폴더 구조가 그대로인 상태에서 웹으로 열었을 때 동작(GitHub Pages 등) · HTML 파일만 따로 열었다면 "파일 선택…"으로 results.json 과 fields 파일을 직접 선택'));
     }finally{ sp.textContent=was; bLoad.disabled=CASES.length===0; }
-  },'primary',ICON.layers,'고른 케이스의 설정(패턴·간격·bleed·주입량·투수계수·분산도 등)으로 화면을 맞추고, 교환성 품위는 최소로 내려 화학 반응을 끈 뒤 OGS 결과를 겹칩니다.');
+  },'primary',ICON.layers,'고른 케이스의 설정(패턴·간격·bleed·주입량·투수계수·분산도)으로 화면을 맞추고, 교환성 품위를 최소로 내려 화학 반응을 끈 뒤 OGS 결과를 겹침');
   bLoad.disabled=true;
-  mk('scenario.json',exportScenario,'',ICON.download,'현재 설정을 계약 v0.1 형식으로 저장합니다. ogs1/runner/make_case.py 의 입력입니다.');
-  mk('스냅샷',exportSnapshot,'',ICON.download,'현재 시점의 수두·추적자 배열을 저장합니다. ogs1/runner/compare.py 로 수치 비교할 때 씁니다.');
+  mk('scenario.json',exportScenario,'',ICON.download,'현재 설정을 계약 v0.1 형식으로 저장 · ogs1/runner/make_case.py 의 입력');
+  mk('스냅샷',exportSnapshot,'',ICON.download,'현재 시점의 수두·추적자 배열 저장 · ogs1/runner/compare.py 로 수치 비교');
   og.appendChild(bar);
   const pick=document.createElement('div'); pick.className='filepick';
   pick.innerHTML='<label class="btn">'+ICON.file+'<span>파일 선택…</span><input type="file" multiple accept=".json,.bin,.gz" hidden></label><span class="fname">results.json + fields 파일</span>';
   og.appendChild(pick);
   const fi=pick.querySelector('input'), fname=pick.querySelector('.fname');
-  const refTog=uiToggle(og,{label:'OGS 참조해 표시',info:'켜면 침출액·수두 모드가 OGS 결과를 그립니다. 브라우저 계산은 그대로 진행되어 상세 지표에서 두 값(수두 RMS 차, 추적자 R² 등)을 비교합니다.',
-    set:v=>{ if(v&&!REF){ alert('먼저 참조해를 불러오십시오 — 목록에서 골라 "참조해 불러오기" 또는 "파일 선택…".'); refTog.checked=false; return; } S.useRef=v; }});
+  const refTog=uiToggle(og,{label:'3D 면에 OGS 결과 표시',info:'켜면 3D 평면의 침출제·수두가 브라우저 대신 OGS 결과로 바뀜 · 브라우저 계산은 그대로 진행 · 우측 "참조해 비교"에 두 결과와 차이를 나란히 표시',
+    set:v=>{ if(v&&!REF){ alert(tr('먼저 참조해를 불러올 것 — 목록에서 골라 "참조해 불러오기" 또는 "파일 선택…"')); refTog.checked=false; return; } S.useRef=v; }});
   fi.addEventListener('change',async()=>{ let meta=null, raw=null; for(const f of fi.files){ if(f.name.endsWith('.json')) meta=JSON.parse(await f.text()); else raw=await f.arrayBuffer(); }
     fname.textContent=[...fi.files].map(f=>f.name).join(', ')||'results.json + fields 파일';
-    if(!meta||!raw){ alert('results.json 과 fields 파일(fields.v2.bin.gz 또는 fields.bin) 두 개를 함께 선택하십시오.'); return; }
-    try{ if(loadReference(meta,await decodeFields(meta,raw))) refTog.checked=true; }catch(e){ alert('참조해 파일을 읽지 못했습니다: '+e.message); } });
+    if(!meta||!raw){ alert(tr('results.json 과 fields 파일(fields.v2.bin.gz 또는 fields.bin) 두 개를 함께 선택')); return; }
+    try{ if(loadReference(meta,await decodeFields(meta,raw))) refTog.checked=true; }catch(e){ alert(tr('참조해 파일을 읽지 못함')+': '+e.message); } });
   /* 목록에서 고른 케이스로 화면 설정 맞추기 — 각 컨트롤에 입력 이벤트를 보내 평소 조작과 같은 경로로 반영 */
   const setR=(r,v)=>{ if(+r.value!==v){ r.value=v; r.dispatchEvent(new Event('input')); } };
   const setT=(t,v)=>{ if(t.checked!==v){ t.checked=v; t.dispatchEvent(new Event('change')); } };
@@ -1365,8 +1839,8 @@ function buildControls(rootEl){
   fetch('ogs1/cases/index.json').then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(ix=>{
     CASES=ix.cases||[]; sel.innerHTML=CASES.map(c=>'<option>'+c.label+(c.default?' (기준)':'')+'</option>').join('');
     const d=CASES.findIndex(c=>c.default); if(d>=0) sel.selectedIndex=d; sel.disabled=bLoad.disabled=CASES.length===0;
-  }).catch(()=>{ sel.innerHTML='<option>목록은 웹으로 열었을 때 사용 가능</option>'; });
-  C.iac=uiToggle(sec,{label:'이온흡착형 풍화토 가정',hyp:true,info:'투수계수를 전풍화층 값 0.16 m/d(Wang 2022)로 바꿉니다. Yuan 2025는 2.59 m/d로 한 자릿수 차이. 사면형 광상은 불포화·비폐색이라 본래 패턴식 대상이 아닙니다.',set:v=>{S.iac=v; kSl.value=v?-80:0; kSl.dispatchEvent(new Event('input'));}});
+  }).catch(()=>{ sel.innerHTML='<option>'+tr('목록은 웹으로 열었을 때 사용 가능')+'</option>'; });
+  C.iac=uiToggle(sec,{label:'이온흡착형 풍화토 가정',hyp:true,info:'투수계수를 전풍화층 값 0.16 m/d(Wang 2022)로 변경 · Yuan 2025는 2.59 m/d로 한 자릿수 차이 · 사면형 광상은 불포화·비폐색이라 본래 패턴식 대상이 아님',set:v=>{S.iac=v; kSl.value=v?-80:0; kSl.dispatchEvent(new Event('input'));}});
 }
 function legendHTML(){
   const m=MODES[S.mode], nI=wells.filter(q=>q.type==='I').length, nP=wells.length-nI;
@@ -1376,8 +1850,8 @@ function legendHTML(){
     it(sw('#2F3540'),'상부 차수층','불투수 · 안쪽은 걷어내고 테두리만'),
     it(sw('#3A414B'),'하부 차수층','불투수'),
     it(sw('#7A6947'),'광체 밖 대수층','품위 0 · 실선 사각형 바깥') ];
-  const lines=[ it('<i class="tri" style="border-top:10px solid #4FC3E8"></i>','주입정 ▼ '+nI+'공','꼭짓점이 땅을 향한 원뿔 · 침출액 주입'),
-    it('<i class="tri" style="border-bottom:10px solid #E0A64A"></i>','회수정 ▲ '+nP+'공','꼭짓점이 위를 향한 원뿔 · 모액 양수'),
+  const lines=[ it('<i class="tri" style="border-top:10px solid #4FC3E8"></i>','주입정 ▼ '+nI+'공','꼭짓점이 땅을 향한 원뿔 · 침출제 주입'),
+    it('<i class="tri" style="border-bottom:10px solid #E0A64A"></i>','회수정 ▲ '+nP+'공','꼭짓점이 위를 향한 원뿔 · 모액(PLS) 양수'),
     it('<i class="dot" style="background:#8B9099"></i>','감시정 12공','회색 원기둥 · 2회 연속 초과 시 적색'),
     it(ln('#4DCCE6'),'유선 · 포집','주입정에서 출발해 회수정에 도달'),
     it(ln('#EB5A4D'),'유선 · 이탈','경계 밖으로 나감 = 봉쇄 실패'),
@@ -1392,32 +1866,34 @@ function legendHTML(){
 function ui(){
   const rf=S.reRE/S.totalSr0*100, ls=S.lossNow, nI=wells.filter(q=>q.type==='I').length, nP=wells.length-nI;
   let ph,cap;
-  if(S.day<=0){ ph='주입 전'; cap='재생을 누르면 주입정에서 침출액이 들어가고 회수정이 양수합니다. 유선 색을 먼저 보십시오. 적색 유선이 있으면 봉쇄가 안 된 배치입니다.'; }
-  else if(!S.restoring){ ph='침출 단계'; cap = S.escFrac>0.02 ? '유선의 '+(S.escFrac*100).toFixed(0)+'%가 회수정에 잡히지 않고 밖으로 나갑니다. 외곽을 회수정으로 바꾸거나 bleed를 올려보십시오.'
-    : (S.alarms>0 ? '감시정 '+S.alarms+'공에서 추적자가 관리치를 넘었습니다.' : '포집 영역이 닫혀 있습니다. 정체 구역(꽃잎 모양)은 침출 진행도 모드에서 보입니다.'); }
-  else { ph='복원 · 지하수 스윕'; cap='주입을 멈추고 양수만 합니다. 남은 침출액을 되끌어오는 구간이며 실제 조업에서는 회수보다 오래 걸립니다.'; }
-  const warn=[]; if(S.alarms>0) warn.push('감시정 '+S.alarms+'/12 초과. 규정상 지시항목 2개 동시 초과가 excursion 기준이며 여기서는 추적자 1개로 대체.'); if(S.escFrac>0.02) warn.push('유선 '+(S.escFrac*100).toFixed(0)+'%가 도메인 밖으로 이탈합니다.'); if(S.qEff<S.Qinj-0.5) warn.push('투수계수 '+S.K.toFixed(2)+' m/d에서 허용 수위강하(15 m) 안에 넣을 수 있는 주입량이 정호당 '+S.qEff.toFixed(0)+' m³/d로 제한됩니다. 1 PV에 '+S.pvDays.toFixed(0)+'일.');
-  return { ref:!!(S.useRef&&REF), day:S.pv.toFixed(2), dayUnit:'PV', progress:Math.min(S.pv,S.PV_END)/S.PV_END, phase:ph, caption:cap, warn:warn,
-    kpis:[{l:'회수율',v:rf.toFixed(1),u:'%'},{l:'유실률',v:ls.toFixed(1),u:'% 광체 밖 침출액'},{l:'감시정 초과',v:S.alarms+'/12',u:'2회 연속 UCL 초과',color:S.alarms>0?'var(--alert)':'var(--safe)'}],
-    chart:{xmax:S.PV_END,xunit:'PV',phases:[{x0:0,x1:S.PV_LEACH,label:'침출'},{x0:S.PV_LEACH,x1:S.PV_END,label:'복원'}],
+  const pvTxt=' (0–'+S.PV_LEACH+' PV)', rsTxt=' ('+S.PV_LEACH+'–'+S.PV_END+' PV)';
+  if(S.day<=0){ ph='주입 전'; cap='재생 시 주입정에서 침출제 주입, 회수정 양수 시작 · 유선 색 확인: 적색 유선이 있으면 봉쇄 실패 배치'; }
+  else if(!S.restoring){ ph='침출 단계'+pvTxt; cap = S.escFrac>0.02 ? '유선의 '+(S.escFrac*100).toFixed(0)+'%가 회수정에 잡히지 않고 밖으로 이탈 · 외곽을 회수정으로 바꾸거나 bleed 상향 필요'
+    : (S.alarms>0 ? '감시정 '+S.alarms+'공에서 추적자 관리치 초과' : '포집 영역 닫힘 · 정체 구역(꽃잎 모양)은 침출 진행도 모드에서 확인'); }
+  else { ph='복원 · 지하수 스윕'+rsTxt; cap='주입 정지, 양수만 계속 · 남은 침출제를 되끌어오는 구간 · 실제 조업에서는 회수보다 오래 걸림'; }
+  const warn=[]; if(S.alarms>0) warn.push('감시정 '+S.alarms+'/12 초과 · 규정상 지시항목 2개 동시 초과가 excursion 기준, 여기서는 추적자 1개로 대체'); if(S.escFrac>0.02) warn.push('유선 '+(S.escFrac*100).toFixed(0)+'%가 도메인 밖으로 이탈'); if(S.qEff<S.Qinj-0.5) warn.push('투수계수 '+S.K.toFixed(2)+' m/d에서 허용 수위강하(15 m) 안에 넣을 수 있는 주입량이 정호당 '+S.qEff.toFixed(0)+' m³/d로 제한 · 1 PV에 '+S.pvDays.toFixed(0)+'일');
+  return { ref:!!(S.useRef&&REF), refText:S.refNote||'', refPanel:!!REF, day:S.pv.toFixed(2), dayUnit:'PV', progress:Math.min(S.pv,S.PV_END)/S.PV_END, phase:ph, caption:cap, warn:warn,
+    dayInfo:'PV(pore volume, 공극체적) = 광체 면적 × 대수층 두께 × 공극률 = '+S.pvVol.toFixed(0)+' m³ · 시간축 = 누적 양수량 ÷ PV, 즉 광체 속 물을 몇 번 갈았는가 · 1 PV ≈ '+S.pvDays.toFixed(0)+'일 · 침출 0–'+S.PV_LEACH+' PV(주입 + 양수), 복원 '+S.PV_LEACH+'–'+S.PV_END+' PV(주입 정지, 양수만)',
+    kpis:[{l:'회수율',v:rf.toFixed(1),u:'%'},{l:'유실률',v:ls.toFixed(1),u:'% 광체 밖 침출제'},{l:'감시정 초과',v:S.alarms+'/12',u:'2회 연속 UCL 초과',color:S.alarms>0?'var(--alert)':'var(--safe)'}],
+    chart:{xmax:S.PV_END,xunit:'PV',phases:[{x0:0,x1:S.PV_LEACH,label:'침출 0–'+S.PV_LEACH+' PV'},{x0:S.PV_LEACH,x1:S.PV_END,label:'복원 '+S.PV_LEACH+'–'+S.PV_END+' PV'}],
       a:{min:0,max:100,series:[{name:'회수율',color:SER[0],pts:S.hist.map(x=>[x.pv,x.rf])},{name:'유실률',color:SER[1],pts:S.hist.map(x=>[x.pv,x.ls])}]},
       b:{title:'모액 농도',unit:'g/L',min:0,max:3,series:[{name:'모액',color:SER[2],pts:S.hist.map(x=>[x.pv,x.cc])}]}},
-    chartHint:'가로축은 누적 양수 공극체적(PV). 1 PV ≈ '+S.pvDays.toFixed(0)+'일.',
+    chartHint:'가로축 = 누적 양수량을 공극체적(PV)으로 나눈 값 · 1 PV ≈ '+S.pvDays.toFixed(0)+'일 · 침출 0–'+S.PV_LEACH+' PV, 복원 '+S.PV_LEACH+'–'+S.PV_END+' PV',
     details:(S.refStats?[['OGS 참조해 프레임',S.refStats.frameDay.toFixed(0),'일'],['수두 RMS 차 (브라우저−OGS)',S.refStats.hRms.toFixed(2),'m'],['추적자 R² (브라우저 vs OGS)',S.refStats.cR2.toFixed(3),''],['OGS sweep 접촉율',(S.refStats.sweep*100).toFixed(0),'%'],['OGS 광체 밖 추적자',(S.refStats.outside*100).toFixed(1),'%']]:[]).concat([['경과 일수',S.day.toFixed(0),'일'],['1 PV 소요',S.pvDays.toFixed(0),'일'],['정호당 주입 (K 제한)',S.qEff.toFixed(0)+' / 허용 '+Math.min(S.qMax,9999).toFixed(0),'m³/d'],['정호 수 (주입/회수)',nI+' / '+nP,'공'],['도메인 한 변',LX.toFixed(0),'m'],['모액 농도 (현재/평균)',S.liquor.toFixed(2)+' / '+meanLiquor().toFixed(2),'g/L'],['50% 회수 도달',S.pv50===null?'—':S.pv50.toFixed(2),'PV'],['80% 회수 도달',S.pv80===null?'—':S.pv80.toFixed(2),'PV'],['누적 주입',S.inWater.toFixed(0),'m³'],['누적 양수',S.prodWater.toFixed(0),'m³'],['시약 순환 총량 (재사용 미고려)',S.reagent.toFixed(1),'t'],['유실률 최대 (침출 중)',S.lossPeak.toFixed(1),'%'],['이탈 유선 비율 (침출 중)',(S.escLeach*100).toFixed(0),'%'],['경계 유출 추적자',(S.injMass>0?S.lsOut/S.injMass*100:0).toFixed(1),'%']]),
-    limits:['<b>흐름</b> · 2차원 평면 정류 피압류(Laplace). 연직 sweep·층상 불균질 없음. 수두는 정호 조건이 바뀔 때만 다시 풂.',
-      '<b>분산</b> · 종·횡 분산도(αL, αT)를 면 속도 기반 대각 텐서로 넣음. 교차항(Dxy) 생략. αL 은 목표값에서 격자 수치분산(Δx/2)을 뺀 유효값으로 적용. 명시적 스킴이라 분산이 크면 부분스텝이 짧아짐.',
-      '<b>화학</b> · 사면식과 같은 1차 속도식. 우라늄 침출 화학(산화·탄산염)이 아니라 이온교환 형태를 그대로 씀.',
-      '<b>excursion</b> · 규정은 지시항목(Cl⁻·전기전도도·총알칼리도) 2개 동시 초과. 여기서는 추적자 1개의 2회 연속 초과로 대체.',
-      '<b>OGS 참조해 대비</b> · 수치는 COMPARE.md 부록 B 참조. 12 시나리오에서 봉쇄 조건의 sweep 은 브라우저가 2~5 %p 낮고, 광체 밖 유실은 ±0.6 %p(봉쇄 실패 시 +2~3 %p).',
-      '<b>폐색</b> · 석고·철수산화물 침전, 점토 팽윤에 의한 투수계수 저하 없음.',
-      '<b>이온흡착형 가정</b> · 가설입니다. 사면형 광상은 불포화·비폐색이라 패턴식 대상이 아니며, 포화대에 놓인 평탄 광상 사례를 아직 확보하지 못했습니다.',
-      '<b>복원</b> · 지하수 스윕만. 역삼투 재주입·환원 재순환 없음. 실제(Highland WY)는 15 PV 이상.'],
-    tlLabel:'0 – '+S.PV_END+' PV', tlTicks:[0,1,2,3,4,5,6,7], tlPhase1:S.PV_LEACH/S.PV_END, done:S.pv>=S.PV_END };
+    limits:['<b>흐름</b> · 2차원 평면 정류 피압류(Laplace) · 연직 sweep·층상 불균질 없음 · 수두는 정호 조건이 바뀔 때만 다시 풂',
+      '<b>분산</b> · 종·횡 분산도(αL, αT)를 면 속도 기반 대각 텐서로 적용 · 교차항(Dxy) 생략 · αL은 목표값에서 격자 수치분산(Δx/2)을 뺀 유효값 · 명시적 스킴이라 분산이 크면 부분스텝 단축',
+      '<b>화학</b> · 사면식과 같은 1차 속도식 · 우라늄 침출 화학(산화·탄산염)이 아닌 이온교환 형태',
+      '<b>excursion</b> · 규정은 지시항목(Cl⁻·전기전도도·총알칼리도) 2개 동시 초과 · 여기서는 추적자 1개의 2회 연속 초과로 대체',
+      '<b>OGS 참조해 대비</b> · 수치는 COMPARE.md 부록 C 참조 · 12 시나리오, 같은 PV에서 sweep은 브라우저가 약 2 %p 낮고 광체 밖 유실은 ±1 %p 이내',
+      '<b>폐색</b> · 석고·철수산화물 침전, 점토 팽윤에 의한 투수계수 저하 없음',
+      '<b>이온흡착형 가정</b> · 가설 · 사면형 광상은 불포화·비폐색이라 패턴식 대상이 아니며, 포화대에 놓인 평탄 광상 사례 미확보',
+      '<b>복원</b> · 지하수 스윕만 · 역삼투 재주입·환원 재순환 없음 · 실제(Highland WY)는 15 PV 이상'],
+    tlLabel:'침출 0–'+S.PV_LEACH+' · 복원 '+S.PV_LEACH+'–'+S.PV_END+' PV', tlTicks:[0,1,2,3,4,5,6,7], tlPhase1:S.PV_LEACH/S.PV_END, done:S.pv>=S.PV_END };
 }
 function batch(opts){ Object.assign(S,opts||{}); reset(); let guard=0; while(S.pv<S.PV_END&&guard<400000){ step(S.dtSub); guard++; }
   trackLoss(); return {recov:S.reRE/S.totalSr0*100, loss:S.lossNow, lossPeak:S.lossPeak, water:S.inWater, reagent:S.reagent, days:S.day, wells:wells.length, alarms:S.alarms, liquor:meanLiquor(), escFrac:S.escLeach, qEff:S.qEff, pv50:S.pv50, pv80:S.pv80, pvDays:S.pvDays, area:(bounds.x1-bounds.x0)*(bounds.y1-bounds.y0)};
 }
-const api={ name:'정호 패턴식', S, MODES, cam, _dbg:()=>({h,Cl,wells,NX,NY,DX,LX}), loadReference, exportScenario, buildGeology:()=>{}, reset, advance, tick, drawSection, buildControls, legendHTML, ui, batch, applyClip,
+const api={ name:'정호 패턴식', S, MODES, cam, _dbg:()=>({h,Cl,wells,NX,NY,DX,LX}), loadReference, exportScenario, drawRefCompare, hasRef:()=>!!REF, buildGeology:()=>{}, reset, advance, tick, drawSection, buildControls, legendHTML, ui, batch, applyClip,
   get scene(){return scene}, get camera(){return camera}, build3D, hasClip:true, onLegend:null, setMode:m=>{S.mode=m}, setClip:v=>{S.clip=v; applyClip();} };
 return api;
 })();
@@ -1447,10 +1923,10 @@ addEventListener('resize',resize);
 
 /* ── 셸 보조: 재생 버튼, 범례, 차트 오버, 안내 창, 단축키 ── */
 const KSTAT={'var(--alert)':['위험','#E2574C'],'var(--liquor)':['주의','#E0B33C'],'var(--safe)':['정상','#6FCF97']};
-function setPlaying(v){ playing=!!v; const b=$('play'), t=playing?'일시정지':'재생'; b.classList.toggle('playing',playing); b.setAttribute('aria-label',t); b.title=t+' (Space)'; }
+function setPlaying(v){ playing=!!v; const b=$('play'), t=tr(playing?'일시정지':'재생'); b.classList.toggle('playing',playing); b.setAttribute('aria-label',t); b.title=t+' (Space)'; }
 function setLegend(html){ const b=$('legend-body'); b.innerHTML=html;
   b.querySelectorAll('.nm').forEach(nm=>{ const r=nm.querySelector('.role'); if(!r) return; const t=r.textContent; r.remove();
-    nm.dataset.infoT=nm.textContent.trim(); nm.dataset.info=t; nm.classList.add('hasinfo'); }); }
+    nm.dataset.infoT=nm.textContent.trim(); nm.dataset.info=t; nm.classList.add('hasinfo'); }); I18N.applyLang(b); }
 $('legend').querySelector('.lg-hd').addEventListener('click',()=>$('legend').classList.toggle('collapsed'));
 (function(){ const cv=$('chart');
   cv.addEventListener('pointermove',e=>{ const r=cv.getBoundingClientRect(); chartHover=e.clientX-r.left; if(chartCfg) drawChart(cv,chartCfg); });
@@ -1469,12 +1945,12 @@ addEventListener('keydown',e=>{ if(e.code!=='Space'||e.repeat) return; const t=e
 
 function buildModes(){ const m=$('modes'); m.innerHTML='';
   active.MODES.forEach((md,i)=>{ const b=document.createElement('button'); b.textContent=md.label; if(i===active.S.mode) b.classList.add('on');
-    b.addEventListener('click',()=>{ m.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); active.setMode(i); setLegend(active.legendHTML()); }); m.appendChild(b); }); }
+    b.addEventListener('click',()=>{ m.querySelectorAll('button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); active.setMode(i); setLegend(active.legendHTML()); }); m.appendChild(b); }); I18N.applyLang(m); }
 function buildTimeline(u){ const t=$('track'); t.querySelectorAll('.tick').forEach(x=>x.remove());
   t.querySelector('.ph1').style.left='0%'; t.querySelector('.ph1').style.width=(u.tlPhase1*100)+'%';
   const xmax=u.tlTicks[u.tlTicks.length-1];
   u.tlTicks.forEach(d=>{ const e=document.createElement('div'); e.className='tick'; e.style.left=(d/xmax*100)+'%'; e.innerHTML=d+(u.dayUnit==='PV'?'':'d')+'<b></b>'; t.appendChild(e); });
-  $('tl-label').textContent=u.tlLabel; thinTicks(); }
+  $('tl-label').textContent=u.tlLabel; I18N.applyLang($('timeline')); thinTicks(); }
 /* 좁은 화면에서 눈금 글자가 겹치면 중간 눈금을 숨긴다 (마지막 눈금은 항상 표시) */
 function thinTicks(){ const t=$('track'), w=t.clientWidth; if(!w) return; const ts=[...t.querySelectorAll('.tick')];
   const xs=ts.map(e=>parseFloat(e.style.left)/100*w); let last=-1e9;
@@ -1483,7 +1959,9 @@ addEventListener('resize',thinTicks);
 
 function refreshUI(){
   const u=active.ui();
-  $('dayv').textContent=u.day; $('dayu').textContent=u.dayUnit; $('phase').textContent=u.phase; $('cap2').textContent=u.caption; $('refline').hidden=!u.ref;
+  $('dayv').textContent=u.day; $('dayu').textContent=u.dayUnit; $('phase').textContent=u.phase; $('cap2').textContent=u.caption; $('refline').hidden=!u.ref; $('reftext').textContent=u.refText||'';
+  $('dayinfo').dataset.info=u.dayInfo||''; $('dayinfo').hidden=!u.dayInfo;
+  const rs=$('refsec'); rs.hidden=!u.refPanel; if(u.refPanel&&!rs.classList.contains('collapsed')) active.drawRefCompare($('refcv'),$('refstat'));
   u.kpis.forEach((k,i)=>{ const n=i+1; $('k'+n+'l').textContent=k.l; $('k'+n+'v').textContent=k.v; const un=$('k'+n+'u'); un.textContent=k.u; un.title=k.u;
     const st=$('k'+n+'s'), sv=KSTAT[k.color]; st.hidden=!sv; if(sv){ st.textContent=sv[0]; st.style.color=sv[1]; } });
   const W=$('warn'); W.className=u.warn.length?'on':''; W.innerHTML=u.warn.join('<br>');
@@ -1491,6 +1969,7 @@ function refreshUI(){
   $('details').innerHTML=u.details.map(d=>'<div class="kpi"><span class="k">'+d[0]+'</span><span><span class="v num">'+d[1]+'</span><span class="u">'+d[2]+'</span></span></div>').join('');
   $('track').querySelector('.fill').style.width=(u.progress*100)+'%';
   if(u.done&&playing) setPlaying(false);
+  if(I18N.lang!=='ko'){ I18N.applyLang($('rightstack')); I18N.applyLang($('right')); }
   return u;
 }
 function activate(key){
@@ -1504,7 +1983,7 @@ function activate(key){
   buildModes(); setLegend(active.legendHTML()); if(orbits[key]) orbits[key].place();
   const u=refreshUI(); buildTimeline(u);
   $('limits').innerHTML=u.limits.map(l=>'<li>'+l+'</li>').join('');
-  resize();
+  I18N.applyLang(document.body); resize();
 }
 document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>activate(b.dataset.tab)));
 $('play').addEventListener('click',()=>{ const u=active.ui(); if(u.done) active.reset(); setPlaying(!playing); });
@@ -1519,37 +1998,38 @@ function renderCompare(){
   const a=cmpRes.slope, b=cmpRes.pattern;
   const row=(lbl,va,vb,note,hl)=>'<tr'+(hl?' class="hl"':'')+'><td class="lbl">'+lbl+'</td><td class="v">'+va+'</td><td class="v">'+vb+'</td><td style="color:var(--ink3);font-size:11.5px">'+(note||'')+'</td></tr>';
   let rows;
-  if(!a||!b){ rows=row('—','미계산','미계산','아래 버튼으로 두 방식을 현재 설정 그대로 끝까지 돌립니다.'); }
+  if(!a||!b){ rows=row('—','미계산','미계산','위 버튼으로 두 방식을 현재 설정 그대로 끝까지 계산'); }
   else rows=[
-    row('회수율 (교환성 분율 기준)',fmtN(a.recov)+' %',fmtN(b.recov)+' %','사면식은 120일, 패턴식은 7 PV 시점. 시간축이 다릅니다.'),
-    row('유실 (침출 중 최대 → 종료)',fmtN(a.loss)+' % (누적)',fmtN(b.lossPeak)+' → '+fmtN(b.loss)+' %','사면식은 되돌릴 수 없는 유출, 패턴식은 복원 양수로 되끌어온 값.',true),
-    row('수리학적 봉쇄','불가능 (구조적)',b.escFrac>0.02?'미달 · 유선 '+fmtN(b.escFrac*100,0)+'% 이탈':'유지','패턴식은 외곽 회수정 + bleed로 닫힌 포집 영역을 만들 수 있음.',true),
-    row('감시·안전 지표','최소 안전율 '+fmtN(a.fs,2),'감시정 초과 '+b.alarms+' / 12','다른 종류의 위험: 사면은 산사태, 패턴은 지하수 유출.'),
-    row('정호·주입공 수',a.wells+' 공 (주입공)',b.wells+' 공 (주입+회수)','패턴식은 회수정·감시정·펌프가 추가로 필요.'),
-    row('물 주입량',fmtN(a.water,0)+' m³',fmtN(b.water,0)+' m³','패턴식은 순환수라 대부분 재사용. 사면식은 일방 주입.'),
-    row('시약 (황산암모늄 환산)',fmtN(a.reagent,1)+' t (소비)',fmtN(b.reagent,1)+' t (순환 총량)','패턴식은 회수액을 재보충해 순환하므로 실제 소비는 이 값의 일부입니다. 모델은 매번 신액 주입으로 계산.'),
-    row('소요 기간',fmtN(a.days,0)+' 일',fmtN(b.days,0)+' 일 (1 PV ≈ '+fmtN(b.pvDays,0)+'일)','패턴식은 복원 2 PV 포함.'),
-    row('모액 농도 (평균)',fmtN(a.liquor,2)+' g/L (종료 시)',fmtN(b.liquor,2)+' g/L','현장 실적 0.3~2.0 g/L 범위 확인용.'),
-    row('대상 면적',fmtN(a.area,0)+' m²',fmtN(b.area,0)+' m²','규모가 다르므로 절대값보다 비율을 보십시오.')
+    row('회수율 (교환성 분율 기준)',fmtN(a.recov)+' %',fmtN(b.recov)+' %','사면식은 120일, 패턴식은 7 PV 시점 · 시간축이 다름'),
+    row('유실 (침출 중 최대 → 종료)',fmtN(a.loss)+' % (누적)',fmtN(b.lossPeak)+' → '+fmtN(b.loss)+' %','사면식은 되돌릴 수 없는 유출, 패턴식은 복원 양수로 되끌어온 값',true),
+    row('수리학적 봉쇄','불가능 (구조적)',b.escFrac>0.02?'미달 · 유선 '+fmtN(b.escFrac*100,0)+'% 이탈':'유지','패턴식은 외곽 회수정 + bleed로 닫힌 포집 영역 형성 가능',true),
+    row('감시·안전 지표','최소 안전율 '+fmtN(a.fs,2),'감시정 초과 '+b.alarms+' / 12','다른 종류의 위험 · 사면은 산사태, 패턴은 지하수 유출'),
+    row('정호·주입공 수',a.wells+' 공 (주입공)',b.wells+' 공 (주입+회수)','패턴식은 회수정·감시정·펌프 추가 필요'),
+    row('물 주입량',fmtN(a.water,0)+' m³',fmtN(b.water,0)+' m³','패턴식은 순환수라 대부분 재사용 · 사면식은 일방 주입'),
+    row('시약 (황산암모늄 환산)',fmtN(a.reagent,1)+' t (소비)',fmtN(b.reagent,1)+' t (순환 총량)','패턴식은 회수액을 재보충해 순환하므로 실제 소비는 이 값의 일부 · 모델은 매번 신액 주입으로 계산'),
+    row('소요 기간',fmtN(a.days,0)+' 일',fmtN(b.days,0)+' 일 (1 PV ≈ '+fmtN(b.pvDays,0)+'일)','패턴식은 복원 2 PV 포함'),
+    row('모액 농도 (평균)',fmtN(a.liquor,2)+' g/L (종료 시)',fmtN(b.liquor,2)+' g/L','현장 실적 0.3~2.0 g/L 범위 확인용'),
+    row('대상 면적',fmtN(a.area,0)+' m²',fmtN(b.area,0)+' m²','규모가 다르므로 절대값보다 비율로 비교')
   ].join('');
   let take='';
   if(a&&b){
     const cont=b.escFrac<=0.02&&b.alarms===0;
-    take='<b>봉쇄</b> — 사면식은 배리어를 다 켜도 닫힌 포집 영역을 만들 수 없고, 유출은 자연 차수층의 연속성에 달려 있습니다. 패턴식은 현재 설정에서 '+(cont?'포집 영역이 닫혀 있습니다.':'포집 영역이 열려 있습니다. 외곽을 회수정으로 두고 bleed를 양수로 올리십시오.')+
-      '<br><b>대가</b> — 그 봉쇄는 정호 '+b.wells+'공과 상시 양수, 감시정 12공, 그리고 회수 뒤 복원 양수로 얻습니다. 사면식은 주입공 '+a.wells+'공과 도랑 하나입니다.'+
-      '<br><b>지질 조건</b> — 패턴식은 포화·피압·투수성 대수층이 전제입니다. 이온흡착형 풍화토(가설, K≈0.16 m/d)에 적용하면 정호당 주입량이 허용 수위강하 안에서 약 19 m³/d로 제한되어 1 PV에 약 700일이 걸립니다. 같은 기간을 맞추려면 정호를 5배 촘촘히 박아야 합니다.'+
-      '<br><b>한 문장</b> — 환경 차이는 시약이 아니라 수리지질에서 옵니다.';
+    take='<b>봉쇄</b> — 사면식은 배리어를 다 켜도 닫힌 포집 영역 형성 불가, 유출은 자연 차수층의 연속성에 좌우 · 패턴식은 현재 설정에서 '+(cont?'포집 영역 닫힘':'포집 영역 열림 → 외곽을 회수정으로 두고 bleed를 양수로 상향')+
+      '<br><b>대가</b> — 그 봉쇄는 정호 '+b.wells+'공과 상시 양수, 감시정 12공, 회수 뒤 복원 양수로 얻음 · 사면식은 주입공 '+a.wells+'공과 도랑 하나'+
+      '<br><b>지질 조건</b> — 패턴식은 포화·피압·투수성 대수층이 전제 · 이온흡착형 풍화토(가설, K≈0.16 m/d)에 적용하면 정호당 주입량이 허용 수위강하 안에서 약 19 m³/d로 제한, 1 PV에 약 700일 · 같은 기간을 맞추려면 정호를 5배 촘촘히 배치'+
+      '<br><b>한 문장</b> — 환경 차이는 시약이 아니라 수리지질에서 옴';
   }
-  $('compare').innerHTML='<h2>두 방식 비교</h2><p class="lead">사면 중력식은 불포화 사면에 위에서 아래로 한 번 흘려 넣는 방식이고, 정호 패턴식은 포화 피압대수층에서 주입정과 회수정으로 순환시키는 방식입니다. 각 탭에서 조정한 설정 그대로 두 모델을 끝까지 돌려 나란히 놓습니다.</p>'+
+  $('compare').innerHTML='<h2>두 방식 비교</h2><p class="lead">사면 중력식 = 불포화 사면에 위에서 아래로 한 번 흘려 넣는 방식 · 정호 패턴식 = 포화 피압대수층에서 주입정과 회수정으로 순환시키는 방식 · 각 탭에서 조정한 설정 그대로 두 모델을 끝까지 계산해 나란히 비교</p>'+
     '<button class="btn primary" id="cmp-run">현재 설정으로 두 방식 계산</button> <span id="cmp-msg" style="color:var(--ink3);font-size:12px;margin-left:10px"></span>'+
     '<table style="margin-top:18px"><thead><tr><th>지표</th><th style="text-align:right">사면 중력식</th><th style="text-align:right">정호 패턴식</th><th>비고</th></tr></thead><tbody>'+rows+'</tbody></table>'+
     (take?'<div class="take">'+take+'</div>':'')+
-    '<div class="cols"><div><h4>사면 중력식이 구조적으로 안 되는 이유</h4><p>광체가 불포화대 사면에 있어 압력으로 흐름을 제어할 수 없습니다. 주입만 있고 양수가 없으니 동수경사를 안쪽으로 걸 방법이 없고, 회수는 사면 하단 집액구가 중력으로 받는 만큼입니다. IAEA가 ISL 성립 조건으로 드는 포화·피압·폐색 중 어느 것도 만족하지 않습니다.</p></div>'+
-    '<div><h4>정호 패턴식이 되는 조건과 비용</h4><p>포화 피압대수층, 투수계수 1 m/d 안팎, 상·하부 차수층. 회수정을 바깥에 두고 양수량을 주입량보다 수 % 많게 유지하면 포집 영역이 닫힙니다(Florence Copper PTF: 주입 4 · 회수 9). 감시정 링에서 지시항목 2개가 동시에 관리치를 넘으면 excursion으로 판정하고, 조업 후 복원에 15 PV 이상 걸린 사례(Highland, WY)가 있습니다.</p></div></div>';
-  const btn=$('cmp-run'); if(btn) btn.addEventListener('click',()=>{ $('cmp-msg').textContent='계산 중… (수 초)'; btn.disabled=true;
+    '<div class="cols"><div><h4>사면 중력식이 구조적으로 안 되는 이유</h4><p>광체가 불포화대 사면에 있어 압력으로 흐름 제어 불가 · 주입만 있고 양수가 없어 동수경사를 안쪽으로 걸 방법이 없음 · 회수는 사면 하단 집액구가 중력으로 받는 만큼 · IAEA가 드는 ISL 성립 조건(포화·피압·폐색) 중 어느 것도 미충족</p></div>'+
+    '<div><h4>정호 패턴식이 되는 조건과 비용</h4><p>포화 피압대수층, 투수계수 1 m/d 안팎, 상·하부 차수층 · 회수정을 바깥에 두고 양수량을 주입량보다 수 % 많게 유지하면 포집 영역 닫힘(Florence Copper PTF: 주입 4 · 회수 9) · 감시정 링에서 지시항목 2개 동시 초과 시 excursion 판정 · 조업 후 복원에 15 PV 이상 걸린 사례(Highland, WY)</p></div></div>';
+  const btn=$('cmp-run'); if(btn) btn.addEventListener('click',()=>{ $('cmp-msg').textContent=tr('계산 중… (수 초)'); btn.disabled=true;
     setTimeout(()=>{ const sa={...Slope.S}, sb={...Pattern.S};
       cmpRes.slope=Slope.batch({}); cmpRes.pattern=Pattern.batch({});
       Slope.reset(); Pattern.reset(); renderCompare(); },30); });
+  I18N.applyLang($('compare'));
 }
 
 /* ── 루프 ── */
@@ -1573,7 +2053,8 @@ function loop(){
   document.querySelectorAll('#tabs button').forEach(b=>b.addEventListener('click',()=>B.classList.remove('dl','dr')));
   addEventListener('keydown',e=>{ if(e.key==='Escape') B.classList.remove('dl','dr'); });
 })();
-activate('slope'); resize(); loop();
+document.querySelectorAll('#lang button').forEach(b=>b.addEventListener('click',()=>{ I18N.set(b.dataset.lang); buildModes(); setLegend(active.legendHTML()); if(activeKey==='compare') renderCompare(); else { const u=refreshUI(); buildTimeline(u); drawChart($('chart'),u.chart); } }));
+I18N.init(); activate('slope'); resize(); loop();
 
 </script>
 </body>

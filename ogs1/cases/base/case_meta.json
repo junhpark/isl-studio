@@ -119,8 +119,9 @@
    "ucl_fraction": 0.03
   },
   "provenance": {
-   "exported_from": "isl-studio pattern tab",
-   "date": "2026-09-18"
+   "exported_from": "make_library.py",
+   "case": "5spot_s50_bp5",
+   "date": "2026-09-22"
   }
  },
  "inj_node_ids": [
@@ -140,9 +141,11 @@
   4279,
   4293
  ],
- "t_end_days": 675.0,
+ "t_end_days": 900.0,
+ "t_leach_days": 642.8571428571428,
  "DX": 3.6,
  "NX": 80,
  "NY": 80,
- "pv_days": 135.0
+ "pv_days": 128.57142857142856,
+ "pv_basis": "production"
 }

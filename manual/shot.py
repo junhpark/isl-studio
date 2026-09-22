@@ -9,7 +9,7 @@ class _Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 _srv = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(_Quiet, directory=ROOT))
 threading.Thread(target=_srv.serve_forever, daemon=True).start()
-URL = f'http://127.0.0.1:{_srv.server_port}/isl-studio-offline.html'
+URL = f'http://127.0.0.1:{_srv.server_port}/isl-studio-offline.html?lang=ko'
 OUT = os.path.join(ROOT, 'docs', 'screenshots'); os.makedirs(OUT, exist_ok=True)
 S = lambda n: os.path.join(OUT, n)
 ARGS = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']
