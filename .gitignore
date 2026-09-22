@@ -1,7 +1,5 @@
-# OGS heavy outputs (regenerate with ogs1/runner/run_case.py)
-# 기준 케이스만 예외 — 스튜디오의 "기준 참조해 불러오기" 가 이 파일을 읽는다 (7 MB)
+# OGS 원본 출력 (ogs1/runner/run_case.py 로 재생성). 참조해는 압축본 fields.v2.bin.gz 만 저장소에 둔다.
 fields.bin
-!ogs1/cases/base/fields.bin
 *.vtu
 *.pvd
 *.log

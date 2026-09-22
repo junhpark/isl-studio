@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""OGS 결과(VTU 시계열) -> 브라우저용 results.json + fields.bin
-   fields.bin: Float32 [T][F][N], N = nx*ny (브라우저 셀 순서 i + j*nx), F = head_m, tracer_frac"""
+"""OGS 결과(VTU 시계열) -> 브라우저용 results.json + fields.v2.bin.gz
+   필드 배열은 [T][F][N], N = nx*ny (브라우저 셀 순서 i + j*nx), F = head_m, tracer_frac.
+   기본은 압축본 v2(fields_io.py 참조, 케이스당 1 MB 안팎)로 쓰고, --v1 을 주면 무압축 Float32 fields.bin 도 함께 쓴다.
+   수두가 시간에 따라 변하는 시나리오(v2 전제 위반)는 자동으로 v1 만 쓴다."""
 import sys, os, glob, json, numpy as np, meshio, subprocess
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fields_io import write_v2
 
-def run(case_dir, do_run=True):
+def run(case_dir, do_run=True, keep_v1=False):
     if do_run: subprocess.run(['ogs','pattern.prj','-o','.'],cwd=case_dir,check=True,stdout=open(os.path.join(case_dir,'ogs.log'),'w'),stderr=subprocess.STDOUT)
     meta=json.load(open(os.path.join(case_dir,'case_meta.json'))); NX,NY,DX=meta['NX'],meta['NY'],meta['DX']
     cinj=meta['scenario']['chemistry']['lixiviant_conc_mol_m3']
@@ -31,9 +35,13 @@ def run(case_dir, do_run=True):
     res={'nx':NX,'ny':NY,'DX':DX,'mass_balance':{'retained_over_injected':mass_ratio,'producer_c_max':pc_max,
          'note':'retained_over_injected 는 파과 후 1 미만이어야 하고 producer_c_max 는 1을 크게 넘으면 안 됨'},'domain_m':sc['grid']['domain_m'],'fields':['head_m','tracer_frac'],'times_days':times,'pv_days':meta['pv_days'],
          'sweep_frac':sweep,'tracer_outside_ore_frac':outside,'wells':w,'source':'OpenGeoSys 6.5.9 ComponentTransport (tracer, advective form, IsotropicDiffusion 0.5)','scenario':sc}
+    try:
+        res.update(write_v2(case_dir,out)); fsize=os.path.getsize(os.path.join(case_dir,res['fields_file']))
+    except ValueError as e:                     # 비정상 수두 → 무압축 v1 로
+        print('[v1 로 저장]',e); keep_v1=True; fsize=out.nbytes
+    if keep_v1: out.tofile(os.path.join(case_dir,'fields.bin'))
     json.dump(res,open(os.path.join(case_dir,'results.json'),'w'),indent=1,ensure_ascii=False)
-    out.tofile(os.path.join(case_dir,'fields.bin'))
     flag='OK' if (mass_ratio[-1]<0.95 and pc_max[-1]<1.2) else 'MASS BALANCE SUSPECT'
-    print(f'results: T={T} frames, {out.nbytes/1e6:.1f} MB, last sweep={sweep[-1]:.2f}, outside={outside[-1]:.3f}, t_end={times[-1]:.0f} d, retained/injected={mass_ratio[-1]:.2f}, prod_c_max={pc_max[-1]:.2f} [{flag}]')
+    print(f'results: T={T} frames, {res.get("fields_file","fields.bin")} {fsize/1e6:.2f} MB, last sweep={sweep[-1]:.2f}, outside={outside[-1]:.3f}, t_end={times[-1]:.0f} d, retained/injected={mass_ratio[-1]:.2f}, prod_c_max={pc_max[-1]:.2f} [{flag}]')
 
-if __name__=='__main__': run(sys.argv[1], do_run=('--no-run' not in sys.argv))
+if __name__=='__main__': run(sys.argv[1], do_run=('--no-run' not in sys.argv), keep_v1=('--v1' in sys.argv))

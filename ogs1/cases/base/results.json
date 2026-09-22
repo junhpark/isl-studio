@@ -905,5 +905,15 @@
    "exported_from": "isl-studio pattern tab",
    "date": "2026-09-18"
   }
+ },
+ "fields_file": "fields.v2.bin.gz",
+ "fields_format": {
+  "version": 2,
+  "gzip": true,
+  "layout": "head_f32[N] + tracer_u16[T][N], little-endian",
+  "head": "steady (first solved step); frame 0 is filled with it",
+  "tracer_offset": -0.25,
+  "tracer_scale": 2.2888532845044633e-05,
+  "quantization_max_error": 1.1444266422522316e-05
  }
 }

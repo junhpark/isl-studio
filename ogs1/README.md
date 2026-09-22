@@ -25,23 +25,29 @@
 - `pip install ogs==6.5.9 meshio` 만으로 OGS와 메시 도구가 설치되고 돈다.
 - 기본 시나리오(5-spot, 50 m, 외곽 회수정, bleed +5 %)가 첫 실행에 수렴한다. 1일 스텝 675일 = 약 7분(1코어).
 - 절점 소스 단위는 **질량유량 kg/s** 이다 (주입정 수두 +9.3 m vs 브라우저 +8.4 m로 확인).
-- 최종 비교(`COMPARE.md`): 수두 RMS 0.13 m(1 %), 광체 밖 유출 분율 0.3 %p 이내 일치, sweep 은 브라우저가 2~3 %p 낮음, 파과 1~5일 늦음.
+- 최종 비교(`COMPARE.md` 부록 B, 12개): 수두 RMS 1~3 %, 광체 밖 유출 분율 봉쇄 시 ±0.6 %p, sweep 은 봉쇄 시 브라우저가 2~5 %p 낮음, 파과 −3~+6일.
 - 첫 비교에서 도메인 불일치(268 vs 288 m)를 잡았다. 스튜디오는 격자·도메인이 다른 참조해를 거부한다.
+- **라이브러리 도메인 불일치 (2026-09-22 정정)** — `make_library.py` 가 12개 모두에 288 m 를 쓰고 있어 10개가 스튜디오와 다른 도메인이었다. `make_case.studio_domain` 으로 맞추고 다시 계산했다. 옛 표는 `cases/archive_v1_domain288/`.
 
 ## 디렉터리
 ```
 schema/    scenario.schema.json (계약 v0.1), example.pattern.json (브라우저 기본값)
 runner/    make_case.py  시나리오 → domain.vtu + boundary/inj/prod 부분영역 + pattern.prj
-           run_case.py   ogs 실행 → results.json + fields.bin (브라우저 재생용)
+           run_case.py   ogs 실행 → results.json + fields.v2.bin.gz (브라우저 재생용 압축본)
+           fields_io.py  참조해 필드 읽기·쓰기 (v1 float32 · v2 압축), v1→v2 변환
            compare.py    브라우저 스냅샷 vs OGS 지표 4개
            validate.py   스키마 검증
            templates/pattern_hc.prj.tmpl   OGS 프로젝트 파일 템플릿 (검증됨)
-           make_library.py  12개 시나리오 배치 (--worker k/n 으로 분할)
+           make_library.py  12개 시나리오 배치 (--worker k/n 으로 분할, OMP_NUM_THREADS=1 권장)
+           make_index.py  cases/index.json (스튜디오 참조해 목록) 생성
            library_summary.py  라이브러리 비교표 → cases/LIBRARY.md
            make_figures.py  COMPARE.md 그림 3장 → figs/
-cases/base/  기본 케이스 (results.json, fields.bin → 스튜디오에서 바로 불러오기)
-cases/lib/   시나리오 라이브러리 12개
+cases/lib/   시나리오 라이브러리 12개 (results.json + fields.v2.bin.gz, 스튜디오 목록에서 바로 불러오기)
+cases/index.json  스튜디오가 읽는 참조해 목록
+cases/base/  기본 케이스 (= lib/5spot_s50_bp5, 그림 스크립트용)
 cases/base_v0_buggy/, base_v1_nonadv_buggy/  결함 참조해 보존 (fig3 용)
+cases/LIBRARY.md, LIBRARY_nodisp.md  12개 비교표 (브라우저 분산항 켬 / 끔)
+cases/archive_v1_domain288/  도메인 288 m 고정이던 옛 비교표 (기록용)
 cases/browser/, browser160/  브라우저 스냅샷 (80, 160 격자)
 browser/     스튜디오 연동 설명, 헤드리스 스냅샷·배치 스크립트
 COMPARE.md   1단계 결과 보고 (5일차 산출물)
@@ -55,7 +61,11 @@ python runner/make_case.py schema/example.pattern.json cases/mycase
 python runner/run_case.py cases/mycase          # ogs 실행 + 후처리
 python runner/compare.py cases/mycase browser_snapshot_day*.json
 ```
-스튜디오 패턴 탭 → "OGS 참조해 연동" → `results.json`과 `fields.bin`을 함께 선택 → "OGS 참조해 표시" 켜기.
+스튜디오 패턴 탭 → "OGS 참조해" → 목록에서 케이스를 고르고 "참조해 불러오기"(웹으로 열었을 때).
+직접 계산한 케이스는 "파일 선택…"에서 `results.json`과 `fields.v2.bin.gz`(또는 구형 `fields.bin`)를 함께 고른다.
+
+**도메인** — 참조해를 스튜디오에 겹치려면 `grid.domain_m` 이 스튜디오 공식(`make_case.studio_domain`)과 같아야 한다.
+스튜디오에서 내보낸 scenario.json 은 자동으로 맞고, 손으로 만든 시나리오는 `make_case.py` 가 어긋나면 경고한다.
 상세 지표에 수두 RMS 차·추적자 R²·OGS sweep 접촉율이 뜬다.
 
 ## 5일 계획 (1인, Claude Code)

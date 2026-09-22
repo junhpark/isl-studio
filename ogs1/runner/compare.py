@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""브라우저 스냅샷(JSON) vs OGS results (results.json + fields.bin)
+"""브라우저 스냅샷(JSON) vs OGS results (results.json + fields.v2.bin.gz 또는 fields.bin)
    지표: 수두 RMS 차, 추적자 MAE, sweep 접촉율(양쪽), 광체 밖 추적자 분율(양쪽)
    해상도가 다르면(브라우저 2배 세분) 블록 평균으로 OGS 격자에 맞춰 비교한다.
    sweep / out_ore 는 각자 원 격자에서 계산 (격자 무관한 비율)."""
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+from fields_io import read_fields
 import sys, json, numpy as np, os
 
 def load_ref(case):
     meta = json.load(open(os.path.join(case, 'results.json'))); N = meta['nx']*meta['ny']
-    arr = np.fromfile(os.path.join(case, 'fields.bin'), np.float32).reshape(len(meta['times_days']), 2, N)
+    arr = read_fields(case)[1]
     return meta, arr
 
 def frame(meta, day):

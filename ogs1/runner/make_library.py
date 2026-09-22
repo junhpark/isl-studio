@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 """시나리오 라이브러리 생성 + 배치 실행.
-   3패턴 × 2간격 × 2 bleed = 12 케이스. 각 케이스: make_case → ogs → run_case(후처리)."""
+   3패턴 × 2간격 × 2 bleed = 12 케이스. 각 케이스: make_case → ogs → run_case(후처리).
+   도메인은 스튜디오 공식(make_case.studio_domain)으로 케이스마다 정한다 — 228~372 m.
+   병렬:  OMP_NUM_THREADS=1 python runner/make_library.py --worker 0/2 &  (1/2 도 같이)
+          OGS 가 코어마다 스레드를 여러 개 띄우면 서로 밀려 선형해법이 10배 가까이 느려진다.
+   이미 results.json 이 있는 케이스는 건너뛴다. 전부 약 40분(2코어) · 1코어 약 75분."""
 import json, os, sys, subprocess, copy, time, itertools
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from make_case import studio_domain
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -20,6 +26,7 @@ def build_scenarios():
         sc = copy.deepcopy(BASE)
         sc['wells']['pattern'] = p; sc['wells']['spacing_m'] = s; sc['wells']['bleed'] = b
         sc['wells']['list'] = []
+        sc['grid']['domain_m'] = studio_domain(p, s, sc['wells']['n'], sc['monitoring']['ring_offset_m'])   # 스튜디오와 같은 도메인 (v1 은 288 m 고정이었음)
         sc['provenance'] = {'exported_from': 'make_library.py', 'case': case_name(p, s, b), 'date': time.strftime('%Y-%m-%d')}
         out.append((case_name(p, s, b), sc))
     return out
@@ -32,7 +39,7 @@ def run_one(name, sc, lib_dir):
     t0 = time.time()
     subprocess.run([sys.executable, os.path.join(HERE, 'make_case.py'), scn, d], check=True, stdout=subprocess.DEVNULL)
     subprocess.run([sys.executable, os.path.join(HERE, 'run_case.py'), d], check=True)
-    # 대용량 VTU 정리 (fields.bin 에 이미 다운샘플됨)
+    # 대용량 VTU 정리 (필드는 run_case 가 fields.v2.bin.gz 로 이미 옮겨 담았다)
     for f in os.listdir(d):
         if f.startswith('pattern_ts_') or f == 'pattern.pvd': os.remove(os.path.join(d, f))
     print(f'[done] {name}  {time.time()-t0:.0f}s')

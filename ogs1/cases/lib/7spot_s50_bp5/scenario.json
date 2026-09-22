@@ -4,7 +4,7 @@
  "grid": {
   "nx": 80,
   "ny": 80,
-  "domain_m": 288.0,
+  "domain_m": 372.0,
   "aquifer_thickness_m": 8.0
  },
  "aquifer": {
@@ -41,6 +41,6 @@
  "provenance": {
   "exported_from": "make_library.py",
   "case": "7spot_s50_bp5",
-  "date": "2026-09-19"
+  "date": "2026-09-22"
  }
 }

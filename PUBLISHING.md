@@ -35,7 +35,7 @@ GitHub 이 발급하는 비공개 주소를 쓰려면 `계정 Settings → Email
 ### 0-3. 용량
 
 저장소 전체 약 10 MB. GitHub 의 파일당 한도(100 MB)와 권장 저장소 크기(1 GB)에 한참 못 미친다.
-`fields.bin`, `*.vtu`, 로그는 `.gitignore` 로 빠져 있으니 그대로 둔다.
+OGS 원본 출력(`fields.bin`, `*.vtu`, 로그)은 `.gitignore` 로 빠져 있고, 참조해는 압축본(`fields.v2.bin.gz`, 12개 합계 약 6 MB)만 들어간다.
 
 ---
 

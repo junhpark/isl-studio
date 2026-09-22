@@ -6,6 +6,13 @@ import json, sys, os, subprocess, math, numpy as np, meshio
 RHO, G, MU = 1000.0, 9.81, 1.0e-3
 def sh(cmd): print('  $', ' '.join(cmd)); subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
 
+def studio_domain(pattern, s, n, ring=25.0):
+    """ISL Studio 패턴 탭의 genWells() 와 같은 도메인 공식. 참조해를 스튜디오에 겹치려면 이 값과 같아야 한다."""
+    if pattern == '7spot': extent = n*s*1.84 + s
+    elif pattern == 'line': extent = max(n*s + s, (2*n)*s*0.6 + s)
+    else: extent = n*s + s
+    return max(200.0, extent + 2*(ring + 44))
+
 def gen_wells(sc):
     w=sc['wells']; s=w['spacing_m']; n=w['n']; L=sc['grid']['domain_m']; cx=cy=L/2
     A,Bt=('P','I') if w['outer_producers'] else ('I','P'); out=[]
@@ -36,6 +43,9 @@ def gen_wells(sc):
 
 def main(scn_path, out_dir):
     sc=json.load(open(scn_path)); os.makedirs(out_dir, exist_ok=True)
+    w0=sc['wells']; dom=studio_domain(w0['pattern'], w0['spacing_m'], w0['n'], sc.get('monitoring',{}).get('ring_offset_m',25.0))
+    if abs(sc['grid']['domain_m']-dom)>1e-6:
+        print(f"  [경고] domain_m {sc['grid']['domain_m']} m ≠ 스튜디오 도메인 {dom:.1f} m — 이 참조해는 스튜디오에 겹칠 수 없습니다")
     g=sc['grid']; NX,NY,L,B=g['nx'],g['ny'],g['domain_m'],g['aquifer_thickness_m']; DX=L/NX
     aq=sc['aquifer']; K=aq['K_m_per_d']/86400.0; k=K*MU/(RHO*G)
     wells=sc['wells']['list'] or gen_wells(sc); sc['wells']['list']=wells

@@ -4,6 +4,8 @@
    fig2 sweep 접촉율 vs PV, 광체 밖 추적자 vs PV (두 모델)
    fig3 물질수지: 잔존/주입 vs 일 (두 모델) — 참조해 결함 검출용 지표"""
 import json, os, sys, numpy as np
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fields_io import read_fields
 import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -23,7 +25,7 @@ plt.rcParams.update({'font.family': _fam, 'axes.unicode_minus': False, 'font.siz
 
 def load_ref(case):
     meta = json.load(open(os.path.join(case, 'results.json'))); N = meta['nx']*meta['ny']
-    return meta, np.fromfile(os.path.join(case, 'fields.bin'), np.float32).reshape(len(meta['times_days']), 2, N)
+    return read_fields(case)
 
 def ore_rect(meta):
     w = meta['wells']; s = meta['scenario']['wells']['spacing_m']
@@ -62,7 +64,7 @@ def fig3(cases, labels, browser_snaps, out):
         meta = json.load(open(os.path.join(case, 'results.json')))
         if 'mass_balance' in meta: r = meta['mass_balance']['retained_over_injected']; ax.plot(meta['times_days'], r, color=col, lw=2 if col == OG else 1.4, ls='-' if col == OG else '--', label=lab)
         else:
-            N = meta['nx']*meta['ny']; arr = np.fromfile(os.path.join(case, 'fields.bin'), np.float32).reshape(-1, 2, N)
+            arr = read_fields(case)[1]
             V = meta['DX']**2*meta['scenario']['grid']['aquifer_thickness_m']*meta['scenario']['aquifer']['porosity']
             ninj = len([q for q in meta['wells'] if q['type'] == 'I']); Qi = [q['Q_m3_per_d'] for q in meta['wells'] if q['type'] == 'I'][0]
             r = [arr[k, 1].sum()*V/max(ninj*Qi*d, 1e-9) for k, d in enumerate(meta['times_days'])]; ax.plot(meta['times_days'], r, color=col, lw=1.4, ls='--', label=lab)

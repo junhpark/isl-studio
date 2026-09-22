@@ -14,9 +14,10 @@ const B = (t, lvl = 0) => new Paragraph({ numbering: { reference: 'bul', level: 
 const BR = (runs, lvl = 0) => new Paragraph({ numbering: { reference: 'bul', level: lvl }, spacing: { after: 60, line: 300 }, children: runs.map(r => new TextRun({ font: FONT, size: 20, ...r })) });
 let NUMI=0; const NUMSTART=()=>{NUMI++;};
 const NUM = t => new Paragraph({ numbering: { reference: 'num', level: 0, instance: NUMI }, spacing: { after: 60, line: 300 }, children: [new TextRun({ text: t, font: FONT, size: 20 })] });
-const IMGP = (p, w, h, cap) => [
-  new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 60 }, children: [new ImageRun({ type: 'png', data: IMG(p), transformation: { width: w, height: h } })] }),
-  new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: cap, font: FONT, size: 17, color: '555555', italics: true })] })];
+/* h 를 0 으로 주면 PNG 머리의 픽셀 크기로 비율을 맞춘다 */
+const IMGP = (p, w, h, cap) => { const d = IMG(p); if (!h) h = Math.round(w * d.readUInt32BE(20) / d.readUInt32BE(16)); return [
+  new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 60 }, children: [new ImageRun({ type: 'png', data: d, transformation: { width: w, height: h } })] }),
+  new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: cap, font: FONT, size: 17, color: '555555', italics: true })] })]; };
 const CODE = t => new Paragraph({ spacing: { after: 60 }, shading: { type: ShadingType.CLEAR, fill: 'F2F2F2', color: 'auto' }, children: [new TextRun({ text: t, font: 'Consolas', size: 17 })] });
 const NOTE = t => new Paragraph({ spacing: { before: 80, after: 160 }, indent: { left: 360 }, border: { left: { style: BorderStyle.SINGLE, size: 12, color: 'B5652E', space: 8 } }, children: [new TextRun({ text: t, font: FONT, size: 19, color: '444444' })] });
 
@@ -33,7 +34,7 @@ const body = [];
 /* ── 표지 ── */
 body.push(new Paragraph({ spacing: { before: 2400, after: 200 }, alignment: AlignmentType.LEFT, children: [new TextRun({ text: 'ISL Studio', font: FONT, size: 64, bold: true })] }));
 body.push(new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: '현장용액채광(In-Situ Leaching) 비교 시뮬레이터', font: FONT, size: 32 })] }));
-body.push(new Paragraph({ spacing: { after: 800 }, children: [new TextRun({ text: '사용 설명서 · 프로토타입 v1.0 (Phase 1 완료판)', font: FONT, size: 24, color: '555555' })] }));
+body.push(new Paragraph({ spacing: { after: 800 }, children: [new TextRun({ text: '사용 설명서 · 프로토타입 v1.1', font: FONT, size: 24, color: '555555' })] }));
 body.push(P('이온흡착형 중희토류 광상의 사면 중력식 침출과, 피압대수층의 정호 패턴식 침출을 같은 화면에서 비교하는 웹 프로토타입입니다. 브라우저에서 단일 HTML 파일로 실행되며, OpenGeoSys 참조해를 불러와 근사 모델과 겹쳐 볼 수 있습니다.'));
 body.push(SP());
 body.push(NOTE('예시용 프로토타입입니다. 거친 근사 모델이며 설계·인허가·환경영향평가의 근거로 사용할 수 없습니다. 기본값은 공개 문헌 인용치이고 특정 광산의 실측값이 아닙니다.'));
@@ -44,7 +45,7 @@ body.push(new Paragraph({ children: [new PageBreak()] }));
 body.push(H1('목차'));
 const TOC = [['1. 개요', ['1.1 무엇을 위한 도구인가', '1.2 누구를 위한 것인가', '1.3 이 문서가 다루지 않는 것']],
   ['2. 시작하기', ['2.1 실행', '2.2 권장 환경', '2.3 첫 5분']],
-  ['3. 화면 구성', ['3.1 3D 화면 조작', '3.2 재생 속도']],
+  ['3. 화면 구성', ['3.1 3D 화면 조작', '3.2 재생 속도', '3.3 설명 보기와 값 입력', '3.4 휴대폰·태블릿']],
   ['4. 탭 1 — 사면 중력식', ['4.1 무엇을 모사하는가', '4.2 제어', '4.3 표시 항목', '4.4 지표 읽는 법', '4.5 보여줄 만한 장면']],
   ['5. 탭 2 — 정호 패턴식', ['5.1 무엇을 모사하는가', '5.2 제어', '5.3 유선 — 봉쇄의 판정', '5.4 표시 항목', '5.5 지표 읽는 법', '5.6 보여줄 만한 장면']],
   ['6. 탭 3 — 비교', []],
@@ -77,39 +78,53 @@ body.push(P('물리 모델의 지배방정식·수치기법·OpenGeoSys 구성�
 body.push(H1('2. 시작하기'));
 body.push(H2('2.1 실행'));
 body.push(P('isl-studio.html 파일 하나를 최신 Chrome, Edge, Firefox, Safari에서 엽니다. 설치가 필요 없습니다. WebGL을 지원하는 브라우저면 됩니다.'));
-body.push(P('3D 렌더링 라이브러리(three.js r128)를 CDN에서 불러오므로 처음 열 때 인터넷 연결이 필요합니다. 오프라인 환경에서는 라이브러리를 내장한 isl-studio-offline.html을 쓰십시오. 기능은 같습니다.'));
+body.push(P('3D 렌더링 라이브러리(three.js r128)를 CDN에서 불러오므로 처음 열 때 인터넷 연결이 필요합니다. 오프라인 환경에서는 라이브러리를 내장한 isl-studio-offline.html을 쓰십시오. 기능은 같습니다. GitHub Pages에 게시했다면 저장소 주소(예: junhpark.github.io/isl-studio)로 들어가 안내 페이지에서 시뮬레이터를 엽니다.'));
+body.push(P('처음 열면 안내 창이 한 번 뜹니다. 도구의 용도와 한계, 조작법이 요약돼 있습니다. “시작하기”로 닫은 뒤에는 화면 오른쪽 위의 PROTOTYPE 배지나 ? 버튼으로 언제든 다시 열 수 있습니다.'));
+body.push(...IMGP('shots/00_about.png', 330, 352, '그림 2-1. 첫 방문 안내 창'));
 body.push(H2('2.2 권장 환경'));
-body.push(B('화면 폭 1,400 px 이상. 좌측 제어 패널(268 px)과 우측 지표 패널(300 px) 사이에 3D 화면이 들어갑니다.'));
+body.push(B('화면 폭 1,400 px 이상. 좌측 속성 패널(282 px)과 우측 지표 패널(292 px) 사이에 3D 화면이 들어갑니다. 900 px 이하(휴대폰·세로 태블릿)에서는 두 패널이 서랍으로 바뀝니다(3.4절).'));
 body.push(B('통합 그래픽으로도 충분합니다. 사면식은 27,000 셀, 패턴식은 6,400 셀을 매 프레임 갱신합니다.'));
 body.push(B('탭 전환 시 계산 상태가 초기화되지는 않지만 재생은 멈춥니다.'));
 body.push(H2('2.3 첫 5분')); NUMSTART();
-body.push(NUM('사면 중력식 탭에서 재생을 누릅니다. 속도는 “보통”으로 두십시오. 침출액(시안색)이 표토를 지나 기반암 위에 고이고 사면 아래로 흐르는 것을 봅니다.'));
+body.push(NUM('사면 중력식 탭에서 하단의 재생 버튼(▶)을 누르거나 스페이스바를 누릅니다. 속도는 3×가 적당합니다. 침출액(시안색)이 표토를 지나 기반암 위에 고이고 사면 아래로 흐르는 것을 봅니다.'));
 body.push(NUM('하단 절개 슬라이더를 왼쪽으로 옮겨 종단면을 엽니다. 층 구분과 침윤선이 보입니다.'));
 body.push(NUM('좌측 “기반암 차수층 결손”을 켜고 초기화 후 다시 재생합니다. 유실률이 뛰는 것을 봅니다.'));
-body.push(NUM('정호 패턴식 탭으로 가서 Bleed 슬라이더를 −10 %로 내립니다. 유선이 적색으로 바뀌며 경계 밖으로 나갑니다. +5 %로 되돌리면 사라집니다. 이 장면이 두 방식의 차이입니다.'));
+body.push(NUM('정호 패턴식 탭으로 가서 Bleed를 −10 %로 내립니다(슬라이더를 끌거나 값 칸에 -10을 입력). 유선이 적색으로 바뀌며 경계 밖으로 나갑니다. +5 %로 되돌리면 사라집니다. 이 장면이 두 방식의 차이입니다.'));
 body.push(NUM('비교 탭에서 “현재 설정으로 두 방식 계산”을 누릅니다.'));
 
 /* ── 3 화면 구성 ── */
 body.push(H1('3. 화면 구성'));
-body.push(...IMGP('shots/02_slope_running.png', 600, 360, '그림 3-1. 전체 화면 (사면 중력식 탭, 76일차 정수 단계)'));
+body.push(...IMGP('shots/02_slope_running.png', 600, 360, '그림 3-1. 전체 화면 (사면 중력식 탭, 재생 중)'));
 body.push(table(['영역', '위치', '내용'], [
-  ['경고 배너', '최상단', '프로토타입임을 알리는 고정 문구'],
-  ['탭', '배너 아래', '사면 중력식 / 정호 패턴식 / 비교'],
-  ['제어 패널', '좌측', '주입 조건, 배리어·운전 조건, 대수층, OGS 연동. 탭마다 내용이 바뀝니다'],
-  ['3D 화면', '중앙', '지질 블록과 용액 분포. 마우스 드래그 회전, 휠 확대'],
+  ['앱 바', '최상단', '로고, 탭(사면 중력식 / 정호 패턴식 / 비교), PROTOTYPE 배지와 ? 버튼(누르면 안내 창)'],
+  ['속성 패널', '좌측', '접이식 섹션(사면: 주입 조건·유출 억제 조치 / 패턴: 정호 배치·운전 조건·대수층·OGS 참조해). 항목마다 값 칸과 ⓘ 설명'],
+  ['3D 화면', '중앙', '지질 블록과 용액 분포. 드래그 회전, 휠 확대(터치: 한 손가락 회전, 두 손가락 확대)'],
   ['표시 항목', '3D 좌상단', '어떤 물리량을 색으로 칠할지 선택'],
-  ['상태 상자', '3D 우상단', '경과 시간(일 또는 PV), 현재 단계, 지금 일어나는 일의 한 줄 설명'],
-  ['범례', '3D 우하단', '면(색)과 선·표식의 의미. 표시 항목·배리어 상태에 따라 갱신'],
-  ['지표 패널', '우측', '대형 지표 3개, 경고, 시간 이력 차트, 상세 지표(접힘), 모델 한계(접힘)'],
-  ['타임라인', '최하단', '재생/초기화, 진행 막대, 속도 3단, 절개 슬라이더'],
+  ['상태 상자', '3D 우상단', '경과 시간(일 또는 PV), 현재 단계, 지금 일어나는 일의 한 줄 설명. 참조해를 겹치면 “OGS 참조해 표시 중” 줄이 추가됨'],
+  ['범례', '3D 우하단', '면(색)과 선·표식. 제목줄을 누르면 접힘. 항목 이름에 마우스를 올리면 상세 설명'],
+  ['지표 패널', '우측', '핵심 지표 3개(정상·주의·위험 표시), 경고, 시간 이력 차트(위: 회수율·유실률 %, 아래: 안전율 또는 모액 농도), 상세 지표·모델 한계(접힘)'],
+  ['타임라인', '최하단', '재생/일시정지, 초기화, 진행 막대, 속도 1×·3×·10×, 절개 슬라이더'],
 ], [1500, 1400, 6200]));
 body.push(SP());
 body.push(H2('3.1 3D 화면 조작'));
-body.push(B('회전: 마우스 왼쪽 버튼 드래그. 확대·축소: 휠. 사면 탭은 비스듬한 측면 시점, 패턴 탭은 위에서 내려다보는 시점이 기본입니다.'));
+body.push(B('회전: 마우스 왼쪽 버튼 드래그(터치는 한 손가락). 확대·축소: 휠(터치는 두 손가락 벌리기). 사면 탭은 비스듬한 측면 시점, 패턴 탭은 위에서 내려다보는 시점이 기본입니다.'));
 body.push(B('절개: 하단 슬라이더를 왼쪽으로 옮기면 블록이 잘리고 잘린 면에 종단면이 그려집니다. 100 %가 절개 없음입니다.'));
 body.push(B('3D 안에는 글자가 없습니다. 무엇이 무엇인지는 우하단 범례에서 읽습니다.'));
 body.push(H2('3.2 재생 속도'));
-body.push(P('“느리게”는 프레임당 부분스텝 1회, “보통”은 3회, “빠르게”는 10회입니다. 사면식 120일은 느리게 약 2분, 패턴식 7 PV는 보통 약 1분입니다. 용액이 번지는 과정을 보려면 느리게, 결과만 보려면 빠르게가 맞습니다.'));
+body.push(P('1×는 프레임당 부분스텝 1회, 3×는 3회, 10×는 10회입니다. 사면식 120일은 1×로 약 2분, 패턴식 7 PV는 3×로 약 1분입니다. 용액이 번지는 과정을 보려면 1×, 결과만 보려면 10×가 맞습니다. 스페이스바로 재생과 정지를 번갈아 할 수 있습니다.'));
+body.push(H2('3.3 설명 보기와 값 입력'));
+body.push(P('화면에는 조작에 필요한 최소한만 두고, 설명과 출처는 필요할 때 꺼내 보도록 했습니다.'));
+body.push(BR([{ text: 'ⓘ 설명 — ', bold: true }, { text: '항목 이름 옆의 ⓘ에 마우스를 올리면 설명 창이 뜨고, 아래쪽에 근거 문헌이 “출처”로 붙습니다. 누르면 창이 고정되며, 다른 곳을 누르거나 Esc로 닫습니다. 섹션 제목 옆 ⓘ에는 그 섹션 전체의 배경이 들어 있습니다.' }]));
+body.push(BR([{ text: '값 직접 입력 — ', bold: true }, { text: '슬라이더 오른쪽의 숫자를 누르면 입력 칸이 됩니다. 숫자를 치고 Enter를 누르면 가장 가까운 허용값으로 맞춰지고, Esc는 취소입니다. 투수계수처럼 로그 눈금인 항목도 m/d 값을 그대로 넣으면 됩니다.' }]));
+body.push(BR([{ text: '접이식 섹션 — ', bold: true }, { text: '섹션 제목을 누르면 접히고 펴집니다. 우측의 상세 지표와 모델 한계는 처음에 접혀 있습니다.' }]));
+body.push(BR([{ text: '시간 이력 차트 — ', bold: true }, { text: '위 칸은 회수율·유실률(%), 아래 칸은 단위가 다른 지표(사면: 최소 안전율과 허용선 1.1, 패턴: 모액 농도 g/L)입니다. 서로 다른 단위를 한 축에 겹치지 않으려고 두 칸으로 나눴습니다. 마우스를 올리면 그 시점의 값이 표시됩니다.' }]));
+body.push(...IMGP('shots/11_popover.png', 520, 210, '그림 3-2. Bleed 항목의 ⓘ 설명 창. 근거 문헌이 아래에 붙는다'));
+body.push(H2('3.4 휴대폰·태블릿'));
+body.push(P('화면 폭이 900 px 이하이면 좌우 패널이 화면 밖으로 빠지고 3D 화면이 전체를 씁니다. 하단의 설정·지표·범례 버튼으로 패널을 꺼내고, 같은 버튼이나 바깥을 눌러 닫습니다. ⓘ는 누르면 설명이 뜹니다(휴대폰에는 마우스 오버가 없음). 가로로 돌리면 3D 화면이 더 넓어집니다.'));
+body.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 120, after: 60 }, children: [
+  new ImageRun({ type: 'png', data: IMG('shots/12_mobile_main.png'), transformation: { width: 190, height: 411 } }), new TextRun({ text: '      ' }),
+  new ImageRun({ type: 'png', data: IMG('shots/13_mobile_drawer.png'), transformation: { width: 190, height: 411 } })] }));
+body.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 200 }, children: [new TextRun({ text: '그림 3-3. 휴대폰 화면(390 px). 본 화면(왼쪽)과 설정 서랍(오른쪽)', font: FONT, size: 17, color: '555555', italics: true })] }));
 
 /* ── 4 사면 탭 ── */
 body.push(H1('4. 탭 1 — 사면 중력식'));
@@ -161,12 +176,12 @@ body.push(table(['항목', '범위 · 기본값', '뜻'], [
   ['패턴 규모', '1×1 – 3×3 · 2×2', '패턴 반복 수'],
   ['외곽 정호 = 회수정', '켜기 · 기본 켜짐', '켜면 회수정이 바깥을 둘러쌈(Florence Copper 방식, 주입 4 : 회수 9). 끄면 주입정이 바깥'],
   ['주입량 / 정호', '30–300 · 100 m³/d', '투수계수가 낮으면 허용 수위강하(15 m) 안에서 자동 제한됨'],
-  ['Bleed (양수 − 주입)', '−15 – +15 · +5 %', '양수가 주입보다 많으면 안쪽으로 동수경사가 생겨 침출액이 갇힘. 음수면 밖으로 밀려남. IAEA NF-T-1.4: 수 %'],
+  ['Bleed', '−15 – +15 · +5 %', '양수가 주입보다 많으면 안쪽으로 동수경사가 생겨 침출액이 갇힘. 음수면 밖으로 밀려남. IAEA NF-T-1.4: 수 %'],
   ['침출제 농도', '0.05–0.50 · 0.25 mol/L', ''],
   ['교환성 품위', '0.010–0.110 · 0.050 wt%', ''],
   ['투수계수', '0.05–5 · 1.0 m/d (로그)', 'IAEA 경험칙: 1 m/d 이상 유리, 0.1 m/d 이하 불가'],
   ['지역 동수경사', '0–0.020 · 0.002', '배경 지하수 흐름(+x 방향). 크면 하류로 밀림'],
-  ['종분산도 αL (목표)', '0–5 · 2.0 m', '물리 분산. 브라우저는 격자 수치분산(Δx/2)을 빼고 적용. OGS와 같은 값을 공유'],
+  ['종분산도 αL', '0–5 · 2.0 m (목표값)', '물리 분산. 브라우저는 격자 수치분산(Δx/2)을 빼고 적용. OGS와 같은 값을 공유'],
   ['횡분산도 αT', '0–1 · 0.2 m', ''],
   ['이온흡착형 풍화토 가정 [가설]', '켜기/끄기', '투수계수를 0.16 m/d로. 사면형 광상은 불포화·비폐색이라 본래 대상이 아님. 포화대 평탄 광상 사례 미확보'],
 ], [2300, 2400, 4400]));
@@ -201,21 +216,26 @@ body.push(B('이온흡착형 가정 켜기. 정호당 주입 100 → 19 m³/d, 1
 /* ── 6 비교 탭 ── */
 body.push(H1('6. 탭 3 — 비교'));
 body.push(P('“현재 설정으로 두 방식 계산”을 누르면 두 탭에서 조정한 설정 그대로 두 모델을 끝까지 돌려(사면 120일, 패턴 7 PV) 나란히 놓습니다. 수 초 걸립니다.'));
-body.push(...IMGP('shots/10_compare.png', 600, 380, '그림 6-1. 비교 탭'));
+body.push(...IMGP('shots/10_compare.png', 600, 360, '그림 6-1. 비교 탭'));
 body.push(P('표 아래 소견은 자동 생성됩니다. 봉쇄 여부, 그 대가(정호 수·상시 양수·감시정·복원), 지질 조건(이온흡착형 가정 시 정호 밀도), 그리고 한 문장 결론.'));
 body.push(NOTE('시간축과 면적이 다릅니다(사면 6,000 m² · 120일, 패턴 22,500 m² · 7 PV). 절대값이 아니라 비율과 방향으로 읽으십시오. 패턴식의 시약은 순환 총량이라 실제 소비보다 훨씬 큽니다.'));
 
 /* ── 7 OGS ── */
 body.push(H1('7. OpenGeoSys 참조해 연동'));
-body.push(P('패턴 탭 좌측 맨 아래 “OGS 참조해 연동” 섹션입니다. 브라우저 근사 모델이 얼마나 정확한지를 오픈소스 유한요소 코드(OpenGeoSys 6.5.9)의 결과와 같은 화면에서 비교합니다.'));
-body.push(H2('7.1 흐름')); NUMSTART();
-body.push(NUM('패턴 탭에서 설정을 정하고 “scenario.json 내보내기”를 누릅니다. 격자, 대수층, 정호 좌표·유량, 분산도, 농도, 일정이 계약 v0.1 형식으로 저장됩니다.'));
-body.push(NUM('키트(ogs-phase1-kit.zip)의 runner/make_case.py에 그 파일을 넣어 OGS 케이스를 만들고, runner/run_case.py로 실행·후처리합니다. 기본 시나리오 675일이 1코어 약 7분입니다.'));
-body.push(NUM('나온 results.json과 fields.bin 두 파일을 “파일 선택”에서 함께 고릅니다. 격자 크기나 도메인이 다르면 거부됩니다. 같은 시나리오여야 비교가 성립하기 때문입니다.'));
-body.push(NUM('“OGS 참조해 표시”를 켭니다. 침출액·수두 모드가 OGS 결과를 그리고, 브라우저 계산은 그대로 진행되어 상세 지표에 수두 RMS 차, 추적자 R², OGS sweep 접촉율이 뜹니다. 상단 단계 표시에 [OGS 참조해 표시 중]이 붙습니다.'));
+body.push(P('패턴 탭 좌측 맨 아래 “OGS 참조해” 섹션입니다. 브라우저 근사 모델이 얼마나 정확한지를 오픈소스 유한요소 코드(OpenGeoSys 6.5.9)의 결과와 같은 화면에서 비교합니다.'));
+body.push(H2('7.1 흐름'));
+body.push(P('저장소에 12개 케이스(3 패턴 × 간격 30·50 m × bleed +5·−10 %)의 참조해가 들어 있습니다. 섹션 맨 위 목록에서 케이스를 고르고 “참조해 불러오기”를 누르면 패턴·간격·규모·bleed·주입량·투수계수·경사·분산도가 그 케이스 값으로 바뀌고, 교환성 품위가 최소로 내려가 화학 반응이 꺼진 상태로(참조해는 반응 없는 추적자만 풀었습니다) 곧바로 겹쳐집니다. 목록은 웹(GitHub Pages 등)으로 열었을 때 채워집니다.'));
+body.push(...IMGP('shots/15_ogs_section.png', 284, 0, '그림 7-1. OGS 참조해 섹션. 목록 · 불러오기 · 내보내기 · 파일 선택 · 표시 토글'));
+body.push(P('목록에 없는 시나리오를 비교하거나 HTML 파일만 따로 열었다면 다음 순서를 따릅니다.'));
+NUMSTART();
+body.push(NUM('패턴 탭에서 설정을 정하고 “scenario.json” 버튼을 누릅니다. 격자, 대수층, 정호 좌표·유량, 분산도, 농도, 일정이 계약 v0.1 형식으로 저장됩니다.'));
+body.push(NUM('저장소 ogs1/ 폴더의 runner/make_case.py에 그 파일을 넣어 OGS 케이스를 만들고, runner/run_case.py로 실행·후처리합니다. 기본 시나리오 675일이 1코어 약 7분입니다.'));
+body.push(NUM('나온 results.json과 필드 파일(fields.v2.bin.gz, 이전 버전 출력은 fields.bin) 두 개를 “파일 선택…”에서 함께 고릅니다(Ctrl 또는 ⌘를 누른 채 클릭). 격자 크기나 도메인이 다르면 거부됩니다. 같은 시나리오여야 비교가 성립하기 때문입니다.'));
+body.push(NUM('“OGS 참조해 표시”를 켭니다(목록에서 불러오면 자동으로 켜집니다). 침출액·수두 모드가 OGS 결과를 그리고, 브라우저 계산은 그대로 진행되어 상세 지표에 수두 RMS 차, 추적자 R², OGS sweep 접촉율이 뜹니다. 상태 상자에 “OGS 참조해 표시 중” 줄이 나타납니다.'));
+body.push(...IMGP('shots/14_ogs_loaded.png', 600, 360, '그림 7-2. 7-spot · 30 m · bleed −10 % 참조해를 불러와 재생한 화면. 3D 면은 OGS 추적자, 우측 상세 지표는 브라우저와의 차이'));
 body.push(H2('7.2 물질수지 경고'));
 body.push(P('참조해를 불러올 때 도메인 잔존/누적 주입 비와 회수정 최대 농도를 검사합니다. 파과 후 잔존비가 0.95를 넘거나 회수정 농도가 주입 농도의 1.2배를 넘으면 경고가 뜹니다. 회수정이 물만 빼고 용질을 빼지 않는 결함(OGS의 FullUpwind 안정화 또는 보존형 이송방정식과 절점 싱크의 조합)이 있을 때 나타나는 증상입니다. Phase 1에서 실제로 겪었고, 그 기록이 COMPARE.md에 있습니다.'));
-body.push(...IMGP('ogs1/figs/fig3_mass_balance.png', 560, 288, '그림 7-1. 결함 참조해 두 개(회색 파선)는 잔존비 1.0에 붙어 있고, 수정된 참조해(주황)와 브라우저(파랑)는 함께 내려간다'));
+body.push(...IMGP('ogs1/figs/fig3_mass_balance.png', 560, 288, '그림 7-3. 결함 참조해 두 개(회색 파선)는 잔존비 1.0에 붙어 있고, 수정된 참조해(주황)와 브라우저(파랑)는 함께 내려간다'));
 body.push(H2('7.3 시나리오 라이브러리'));
 body.push(P('ogs-phase1-lib.zip에 3 패턴 × 2 간격(30, 50 m) × 2 bleed(+5, −10 %) = 12개 케이스의 참조해가 들어 있습니다. 패턴 탭에서 같은 설정을 맞춘 뒤 해당 폴더의 두 파일을 불러오면 됩니다. 용량 때문에 프레임을 10일 간격으로 솎았습니다.'));
 
@@ -238,13 +258,14 @@ body.push(SP());
 
 /* ── 9 검증 ── */
 body.push(H1('9. 검증 결과 요약'));
-body.push(P('패턴 탭을 OpenGeoSys 참조해와 12개 시나리오에서 비교했습니다. 상세는 COMPARE.md에 있습니다.'));
+body.push(P('패턴 탭을 OpenGeoSys 참조해와 12개 시나리오(3 패턴 × 간격 30·50 m × bleed +5·−10 %, 참조해 도메인을 스튜디오와 같게 맞춤)에서 비교했습니다. 상세는 COMPARE.md 부록 B에 있습니다.'));
 body.push(table(['지표', '브라우저 − OGS', '해석'], [
-  ['수두 RMS', '0.13 m (범위의 1 %)', '흐름 풀이는 참조해와 같다'],
-  ['sweep 접촉율', '±1 %p (분산항 도입 후)', '회수 한계 논의에 그대로 사용 가능'],
-  ['광체 밖 유출, 봉쇄 유지', '±1 %p', '중앙값으로 읽는다'],
-  ['광체 밖 유출, 봉쇄 실패', '브라우저 +3~5 %p', '그때만 상한으로 읽는다'],
-  ['파과 시각', '브라우저 0~6일 늦음', '운영 일정에는 무시 가능'],
+  ['수두 RMS', '0.12~0.35 m (범위의 1~3 %)', '흐름 풀이는 참조해와 같다'],
+  ['sweep 접촉율, 봉쇄 유지', '브라우저 −2 ~ −5 %p (평균 −2.9)', '분산항 도입 후. 브라우저가 몇 %p 보수적이라고 붙여 읽는다'],
+  ['sweep 접촉율, 봉쇄 실패', '±1 %p', '유출이 sweep을 지배해 차이가 묻힌다'],
+  ['광체 밖 유출, 봉쇄 유지', '±0.6 %p', '중앙값으로 읽는다'],
+  ['광체 밖 유출, 봉쇄 실패', '브라우저 +2~3 %p', '그때만 상한으로 읽는다'],
+  ['파과 시각', '−3 ~ +6일', '운영 일정에는 무시 가능'],
 ], [2400, 2600, 4100]));
 body.push(SP());
 body.push(...IMGP('ogs1/figs/fig1_tracer_fields.png', 600, 200, '그림 9-1. 270일 추적자 필드. 브라우저(좌), OGS(중), 차이(우). 차이는 플룸 가장자리 얇은 띠뿐'));
@@ -253,23 +274,28 @@ body.push(P('사면 탭은 참조해가 없습니다. 문헌(Yuan et al. 2025)�
 /* ── 10 파일 ── */
 body.push(H1('10. 파일 구성과 재현'));
 body.push(table(['파일', '내용'], [
-  ['isl-studio.html', '웹 프로그램 본체. 단일 파일. CDN에서 three.js 로드'],
-  ['isl-studio-offline.html', '같은 프로그램, three.js 내장 (0.7 MB)'],
-  ['ogs-phase1-kit.zip', 'OGS 연동 키트: 스키마, 러너 스크립트, prj 템플릿, 기본 케이스, README, COMPARE.md, 그림'],
-  ['ogs-phase1-lib.zip', '시나리오 라이브러리 12개 참조해'],
-  ['COMPARE.md', '검증 결과 보고. 참조해 결함 기록 포함'],
-  ['MANUAL.docx', '이 문서'],
+  ['index.html', '안내 페이지. GitHub Pages의 진입점'],
+  ['isl-studio.html', '웹 프로그램 본체. 단일 파일. CDN에서 three.js 로드. 편집은 이 파일에서만'],
+  ['isl-studio-offline.html', '같은 프로그램, three.js 내장(0.7 MB). manual/build_offline.py로 생성'],
+  ['docs/ISL-Studio-Manual.docx', '이 문서'],
+  ['docs/ISL-Studio-Technical-Background.docx', '기술 배경서: 지배방정식·수치기법·OpenGeoSys 구성·검증 해석'],
+  ['docs/COMPARE.md', '검증 결과 보고. 참조해 결함 기록 포함'],
+  ['ogs1/', 'OGS 연동 키트: 스키마, 러너 스크립트, prj 템플릿'],
+  ['ogs1/cases/lib/', '참조해 12개 (results.json + 압축 필드 fields.v2.bin.gz, 합계 약 6 MB)'],
+  ['ogs1/cases/index.json', '스튜디오 목록이 읽는 케이스 표 (runner/make_index.py로 생성)'],
+  ['PUBLISHING.md', 'GitHub 저장소 게시·Pages 배포 절차'],
+  ['manual/', '설명서·기술 배경서·화면 캡처·오프라인 판 생성 스크립트'],
 ], [2600, 6500]));
 body.push(SP());
 body.push(H2('10.1 OGS 키트 재현'));
 body.push(CODE('pip install -r requirements.txt            # ogs==6.5.9, meshio, numpy, jsonschema'));
 body.push(CODE('python runner/make_case.py schema/example.pattern.json cases/base'));
-body.push(CODE('python runner/run_case.py cases/base       # OGS 실행 + results.json / fields.bin'));
+body.push(CODE('python runner/run_case.py cases/base       # OGS 실행 + results.json / fields.v2.bin.gz'));
 body.push(CODE('node browser/make_browser_snapshots.js cases/browser 2.0 0.2 21 135 270 405 540'));
 body.push(CODE('python runner/compare.py cases/base cases/browser/browser_snapshot_day*.json'));
 body.push(CODE('python runner/make_library.py                # 12 케이스, 1코어 약 60분'));
 body.push(H2('10.2 소스 구조 (개발자용)'));
-body.push(P('isl-studio.html의 스크립트는 네 부분입니다. 공통 유틸(색 스케일, 차트, DOM 빌더, 카메라), Slope 모듈, Pattern 모듈, 셸(탭·렌더러·타임라인·비교). 두 물리 모듈은 같은 인터페이스(reset / advance / tick / drawSection / ui / batch)로 셸에 물리고, THREE나 DOM 없이도 돌아가도록 분리되어 있어 Node에서 헤드리스로 실행됩니다. 참조해 재생 모듈을 붙이거나 물리 모듈을 Python으로 바꿀 때 이 경계를 유지하십시오.'));
+body.push(P('isl-studio.html의 스크립트는 네 부분입니다. 공통 유틸(색 스케일, 아이콘·설명 팝오버·속성 패널 빌더, 차트, 카메라), Slope 모듈, Pattern 모듈, 셸(탭·렌더러·타임라인·안내 창·비교). 두 물리 모듈은 같은 인터페이스(reset / advance / tick / drawSection / ui / batch)로 셸에 물리고, THREE나 DOM 없이도 돌아가도록 분리되어 있어 Node에서 헤드리스로 실행됩니다. 참조해 재생 모듈을 붙이거나 물리 모듈을 Python으로 바꿀 때 이 경계를 유지하십시오. 컨트롤을 추가할 때는 uiSlider(단위 unit, 설명 info, 출처 src)·uiToggle·uiSection에 설명을 넘기면 ⓘ가 자동으로 붙습니다.'));
 
 /* ── 11 참고문헌 ── */
 body.push(H1('11. 참고문헌'));
@@ -303,7 +329,7 @@ const doc = new Document({
     { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }, { level: 1, format: LevelFormat.BULLET, text: '–', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 1000, hanging: 300 } } } }] },
     { reference: 'num', levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 360 } } } }] }] },
   sections: [{ properties: { page: { margin: { top: 1300, bottom: 1200, left: 1300, right: 1300 } } },
-    headers: { default: new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'ISL Studio 사용 설명서 · 프로토타입 v1.0', font: FONT, size: 16, color: '888888' })] })] }) },
+    headers: { default: new Header({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: 'ISL Studio 사용 설명서 · 프로토타입 v1.1', font: FONT, size: 16, color: '888888' })] })] }) },
     footers: { default: new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 16, color: '888888' })] })] }) },
     children: body }]
 });
