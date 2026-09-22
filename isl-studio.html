@@ -959,9 +959,22 @@ function buildControls(rootEl){
   uiSlider(sec,{label:'지역 동수경사',min:0,max:20,val:2,fmt:v=>(v/1000).toFixed(3),set:v=>{S.grad=v/1000; rebuild();}});
   uiSlider(sec,{label:'종분산도 αL (목표)',min:0,max:50,val:20,fmt:v=>(v/10).toFixed(1)+' m',set:v=>{S.aL=v/10; rebuild();},src:'유효 = 목표 − Δx/2 · OGS와 같은 값',srcTitle:'브라우저는 풍상차분 수치분산(≈Δx/2, 이 격자에서 약 1.8 m)을 이미 갖고 있어 목표에서 그만큼 뺀 물리 분산만 더한다. 내보내는 scenario.json 에는 목표값이 실린다. 참조해 기본 αL 2 m, αT 0.2 m'});
   uiSlider(sec,{label:'횡분산도 αT',min:0,max:10,val:2,fmt:v=>(v/10).toFixed(1)+' m',set:v=>{S.aT=v/10; rebuild();}});
-  const og=uiSection(rootEl,'OGS 참조해 연동','시나리오를 내보내 OGS로 계산하고, 결과(results.json + fields.bin)를 불러와 같은 화면에 겹칩니다.');
+  const og=uiSection(rootEl,'OGS 참조해 연동','기준 케이스(5-spot 50 m)는 아래 버튼 한 번으로 불러옵니다. 다른 시나리오는 내보내 OGS로 계산한 뒤 results.json + fields.bin 두 파일을 선택하십시오.');
   const bar=document.createElement('div'); bar.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px';
-  const mk=(t,f)=>{ const b=document.createElement('button'); b.textContent=t; b.style.cssText='border:1px solid var(--line);background:var(--panel2);color:var(--ink);padding:6px 10px;font-size:11.5px;border-radius:3px;cursor:pointer;font-family:inherit'; b.addEventListener('click',f); bar.appendChild(b); };
+  const mk=(t,f,hi)=>{ const b=document.createElement('button'); b.textContent=t; b.style.cssText='border:1px solid '+(hi?'#2f5f78':'var(--line)')+';background:var(--panel2);color:var(--ink);padding:6px 10px;font-size:11.5px;border-radius:3px;cursor:pointer;font-family:inherit'; b.addEventListener('click',f); bar.appendChild(b); return b; };
+  const bLoad=mk('기준 참조해 불러오기',async()=>{
+    const was=bLoad.textContent; bLoad.textContent='불러오는 중…'; bLoad.disabled=true;
+    try{
+      const [r1,r2]=await Promise.all([fetch('ogs1/cases/base/results.json'),fetch('ogs1/cases/base/fields.bin')]);
+      if(!r1.ok||!r2.ok) throw new Error('HTTP '+r1.status+'/'+r2.status);
+      const meta=await r1.json(), buf=await r2.arrayBuffer();
+      if(loadReference(meta,buf)) refTog.checked=true;
+    }catch(e){
+      alert('기준 참조해를 가져오지 못했습니다 ('+e.message+').\n\n'
+        +'이 버튼은 저장소 폴더 구조가 그대로인 상태에서 웹으로 열었을 때 동작합니다(GitHub Pages 등).\n'
+        +'HTML 파일만 따로 열었거나 오프라인이면, 아래 "파일 선택"으로 results.json 과 fields.bin 을 직접 고르십시오.');
+    }finally{ bLoad.textContent=was; bLoad.disabled=false; }
+  },true);
   mk('scenario.json 내보내기',exportScenario); mk('브라우저 스냅샷 내보내기',exportSnapshot); og.appendChild(bar);
   const fi=document.createElement('input'); fi.type='file'; fi.multiple=true; fi.accept='.json,.bin'; fi.style.cssText='font-size:11px;color:var(--ink3);width:100%;margin-bottom:8px'; og.appendChild(fi);
   const refTog=uiToggle(og,{label:'OGS 참조해 표시',desc:'켜면 침출액·수두 모드가 OGS 결과를 그립니다. 브라우저 계산은 그대로 진행되어 상세 지표에서 두 값을 비교합니다.',set:v=>{ if(v&&!REF){ alert('먼저 results.json과 fields.bin을 선택하십시오.'); refTog.checked=false; return; } S.useRef=v; }});

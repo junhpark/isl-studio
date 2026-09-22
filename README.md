@@ -33,12 +33,15 @@ ogs1/                      OpenGeoSys Phase 1 키트
   runner/                  make_case / run_case / compare / make_library / make_figures
   runner/templates/        pattern_hc.prj.tmpl (이류형 + 등방확산 안정화)
   browser/                 헤드리스 브라우저 스냅샷 생성 (Node)
-  cases/                   base + 12 시나리오 라이브러리 (results.json / pattern.prj 만 포함)
+  cases/base/              기준 케이스 참조해 (results.json + fields.bin, 스튜디오가 바로 읽음)
+  cases/lib/               12 시나리오 라이브러리 (results.json / pattern.prj 만 포함)
 PUBLISHING.md              GitHub 게시·Pages 배포 절차
 manual/                    설명서·기술배경서 생성 스크립트 (docx-js), 수식(eqs.py)·개념도(schematics.py) 생성, 스크린샷(Playwright)
 ```
 
-`ogs1/cases/**/fields.bin`, `*.vtu`, 로그는 용량 때문에 저장소에서 제외했다(`.gitignore`).
+기준 케이스의 참조해(`ogs1/cases/base/results.json` + `fields.bin`, 7 MB)는 저장소에 포함돼 있다.
+패턴 탭의 **"기준 참조해 불러오기"** 버튼이 이 두 파일을 읽어 OGS 해를 화면에 겹친다(웹으로 열었을 때).
+나머지 12개 라이브러리의 `fields.bin`, `*.vtu`, 로그는 용량 때문에 제외했다(`.gitignore`).
 `ogs1/README.md`의 재현 절차대로 `run_case.py`를 돌리면 다시 생긴다(케이스당 수 분, 12개 라이브러리 약 1시간).
 
 ## 검증 요약 (Phase 1)
