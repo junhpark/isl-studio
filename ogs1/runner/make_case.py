@@ -78,14 +78,16 @@ def main(scn_path, out_dir):
     pv_days=pv_vol/q_prod_total
     t_leach_d=sch['leach_pv']*pv_days
     t_end_d=(sch['leach_pv']+sch.get('restore_pv',0.0))*pv_days
-    n_steps=int(math.ceil(t_end_d/dt_d)); t_end_s=n_steps*dt_d*86400.0
+    out_every=max(1,int(round(5.0/dt_d)))
+    n_steps=int(math.ceil(t_end_d/dt_d/out_every))*out_every   # 저장 간격(5일)의 배수로 올려 마지막 프레임이 종료 시각에 오게
+    t_end_s=n_steps*dt_d*86400.0
     t_leach_s=t_leach_d*86400.0
     tmpl=open(os.path.join(os.path.dirname(os.path.abspath(__file__)),'templates','pattern_hc.prj.tmpl')).read()
     prj=tmpl.format(k=k, phi=aq['porosity'], aL=aq['dispersivity_L_m'], aT=aq['dispersivity_T_m'], Dm=aq['pore_diffusion_m2_s'],
         rho=RHO, mu=MU, p_grad=RHO*G*aq['regional_gradient'], q_inj=Qi_node, q_prod=Qp_node,
         c_inj=sc['chemistry']['lixiviant_conc_mol_m3'], dt=dt_d*86400.0, n_steps=n_steps, t_end=t_end_s,
         t_leach=t_leach_s, t_off=t_leach_s+1.0, t_big=max(t_end_s,t_leach_s)*2+86400.0,
-        out_every=max(1,int(round(5.0/dt_d))))
+        out_every=out_every)
     open(os.path.join(out_dir,'pattern.prj'),'w').write(prj)
     meta={'scenario':sc,'inj_node_ids':inj_ids,'prod_node_ids':prod_ids,'t_end_days':n_steps*dt_d,'t_leach_days':t_leach_d,
           'DX':DX,'NX':NX,'NY':NY,'pv_days':pv_days,'pv_basis':'production'}

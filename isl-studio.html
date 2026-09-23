@@ -1673,7 +1673,8 @@ function loadReference(meta,buf){ if(meta.nx!==NX||meta.ny!==NY){ alert(tr('격�
   if(meta.mass_balance){ const r=meta.mass_balance.retained_over_injected, pc=meta.mass_balance.producer_c_max; const rl=r[r.length-1], pl=pc[pc.length-1];
     if(rl>0.95||pl>1.2) alert(tr('주의: 이 참조해는 물질수지가 의심스러움')+'\n'+tr('잔존/주입')+' = '+rl.toFixed(2)+' ('+tr('파과 후 0.95 미만이어야 함')+'), '+tr('회수정 최대 농도')+' = '+pl.toFixed(2)+' ('+tr('1.2 이하여야 함')+')\n'+tr('회수정이 용질을 빼지 않는 결함(FullUpwind 또는 보존형)일 수 있음 · 불러오기는 진행')); }
   else alert(tr('참고: 이 참조해에는 물질수지 정보가 없음(구버전 run_case.py) · 결과를 신뢰하기 전에 잔존/주입 비를 확인할 것'));
-  REF={meta:meta,arr:new Float32Array(buf),tEnd:meta.times_days[meta.times_days.length-1]}; REFSIG=sigOf(meta); S.useRef=true; return true; }
+  const td=meta.times_days, dtOut=td.length>1?td[td.length-1]-td[td.length-2]:0;
+  REF={meta:meta,arr:new Float32Array(buf),tEnd:td[td.length-1]+dtOut};   /* 마지막 프레임을 저장 간격(5일)만큼 더 유지 */ REFSIG=sigOf(meta); S.useRef=true; return true; }
 /* 참조해 필드 해제: v1 = Float32 [T][2][N] 그대로, v2 = gzip(수두 f32[N] + 추적자 u16[T][N]) → v1 배열로 펼침 */
 async function decodeFields(meta,raw){
   const ff=meta.fields_format||{}; if(ff.version!==2) return raw;
